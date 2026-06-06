@@ -306,7 +306,7 @@ export async function getSnapshots(options?: QueryOptions): Promise<PagedResult<
   let query = supabase
     .from("player_snapshots")
     .select("id, snapshot_kind, player_id, player_name, cash, highest_wave, total_kills, created_at")
-    .order("created_at", { ascending: false })
+    .order("id", { ascending: false })
     .range(from, to);
 
   query = applyPlayerSearch(query, search);
@@ -324,12 +324,12 @@ export async function getLatestPlayers(options?: QueryOptions): Promise<PagedRes
   const supabase = createServerSupabaseClient();
   const { page, pageSize, search, type } = normalizeQueryOptions(options);
   const from = (page - 1) * pageSize;
-  const to = from + pageSize;
+  const scanLimit = Math.min(1000, Math.max(pageSize + 1, page * pageSize * 30));
   let query = supabase
-    .from("latest_player_snapshots")
+    .from("player_snapshots")
     .select("id, snapshot_kind, player_id, player_name, cash, highest_wave, total_kills, created_at")
-    .order("created_at", { ascending: false })
-    .range(from, to);
+    .order("id", { ascending: false })
+    .range(0, scanLimit - 1);
 
   query = applyPlayerSearch(query, search);
   if (type) query = query.eq("snapshot_kind", type);
@@ -337,8 +337,16 @@ export async function getLatestPlayers(options?: QueryOptions): Promise<PagedRes
   if (error) throw error;
 
   const loadedRows = (data ?? []) as SnapshotRow[];
-  const rows = loadedRows.slice(0, pageSize);
-  const hasNextPage = loadedRows.length > pageSize;
+  const uniqueRows: SnapshotRow[] = [];
+  const seenPlayerIds = new Set<number>();
+  for (const row of loadedRows) {
+    if (seenPlayerIds.has(row.player_id)) continue;
+    seenPlayerIds.add(row.player_id);
+    uniqueRows.push(row);
+  }
+
+  const rows = uniqueRows.slice(from, from + pageSize);
+  const hasNextPage = uniqueRows.length > from + pageSize || loadedRows.length === scanLimit;
   const totalCount = approximateTotalCount(from, rows.length, hasNextPage);
   return { rows, page, pageSize, totalCount, totalCountIsExact: false, hasNextPage };
 }
