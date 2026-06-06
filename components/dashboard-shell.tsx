@@ -125,6 +125,8 @@ export function SearchForm({
   type,
   status,
   pageSize,
+  totalLabel,
+  totalCount,
   typeOptions = [],
   statusOptions = [],
 }: {
@@ -134,6 +136,8 @@ export function SearchForm({
   type?: string;
   status?: string;
   pageSize?: number;
+  totalLabel?: string;
+  totalCount?: number;
   typeOptions?: Array<{ label: string; value: string }>;
   statusOptions?: Array<{ label: string; value: string }>;
 }) {
@@ -149,6 +153,12 @@ export function SearchForm({
 
   return (
     <div className="table-toolbar">
+      {totalLabel ? (
+        <div className="table-total">
+          <span>{totalLabel}</span>
+          <strong>{new Intl.NumberFormat("en-US").format(totalCount ?? 0)}</strong>
+        </div>
+      ) : null}
       {typeOptions.length > 0 ? (
         <div className="filter-tabs">
           <Link className={!type ? "filter-tab active" : "filter-tab"} href={filterHref("")}>All</Link>

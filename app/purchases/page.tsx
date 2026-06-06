@@ -23,6 +23,8 @@ export default async function PurchasesPage({
             value={params.q}
             status={params.status}
             pageSize={pageSize}
+            totalLabel="Total Purchases"
+            totalCount={result.totalCount}
             statusOptions={[
               { label: "Verified", value: "verified" },
               { label: "Missing purchase ID", value: "missing_purchase_id" },

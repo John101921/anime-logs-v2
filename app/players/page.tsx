@@ -25,6 +25,8 @@ export default async function PlayersPage({
             type={params.type}
             status={params.status}
             pageSize={pageSize}
+            totalLabel="Total Players"
+            totalCount={result.totalCount}
             typeOptions={[
               { label: "Full snapshot", value: "full" },
               { label: "Compact snapshot", value: "compact" },

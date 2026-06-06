@@ -24,6 +24,8 @@ export default async function SnapshotsPage({
             type={params.type}
             status={params.status}
             pageSize={pageSize}
+            totalLabel="Total Snapshots"
+            totalCount={result.totalCount}
             typeOptions={[
               { label: "Full snapshot", value: "full" },
               { label: "Compact snapshot", value: "compact" },

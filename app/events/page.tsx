@@ -24,6 +24,8 @@ export default async function EventsPage({
             type={params.type}
             status={params.status}
             pageSize={pageSize}
+            totalLabel="Total Events"
+            totalCount={result.totalCount}
             typeOptions={[
               { label: "Join", value: "join" },
               { label: "Leave", value: "leave" },

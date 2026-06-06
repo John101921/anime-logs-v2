@@ -31,6 +31,8 @@ export default async function SalesPage({
             type={params.type}
             status={params.status}
             pageSize={pageSize}
+            totalLabel="Total Sales"
+            totalCount={result.totalCount}
             typeOptions={[
               { label: "Single", value: "single" },
               { label: "Bulk", value: "bulk" },

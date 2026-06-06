@@ -24,6 +24,8 @@ export default async function SecurityPage({
             type={params.type}
             status={params.status}
             pageSize={pageSize}
+            totalLabel="Total Security Events"
+            totalCount={result.totalCount}
             typeOptions={[
               { label: "Critical", value: "critical" },
               { label: "High", value: "high" },

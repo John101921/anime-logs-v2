@@ -440,6 +440,22 @@ select {
   width: 100%;
 }
 
+.table-total {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 13px;
+  width: fit-content;
+}
+
+.table-total strong {
+  color: var(--text);
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+}
+
 .filter-tabs {
   display: flex;
   flex-wrap: wrap;

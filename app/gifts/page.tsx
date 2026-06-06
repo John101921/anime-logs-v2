@@ -24,6 +24,8 @@ export default async function GiftsPage({
             value={params.q}
             type={params.type}
             pageSize={pageSize}
+            totalLabel="Total Gifts"
+            totalCount={result.totalCount}
             typeOptions={[
               { label: "Mutated character", value: "mutated" },
               { label: "Trait character", value: "traited" },
