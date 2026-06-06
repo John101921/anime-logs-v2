@@ -20,6 +20,7 @@ export function AsyncCount({
   fallbackIsExact: boolean;
 }) {
   const [count, setCount] = useState<number | null>(null);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     if (!countKey) return;
@@ -35,6 +36,9 @@ export function AsyncCount({
       })
       .catch(() => {
         // Counts are non-critical; table rendering should never depend on them.
+      })
+      .finally(() => {
+        if (!cancelled) setLoaded(true);
       });
 
     return () => {
@@ -44,6 +48,10 @@ export function AsyncCount({
 
   if (count != null) {
     return formatter.format(count);
+  }
+
+  if (countKey) {
+    return loaded ? `${formatter.format(fallback)}${fallbackIsExact ? "" : "+"}` : "Loading...";
   }
 
   return `${formatter.format(fallback)}${fallbackIsExact ? "" : "+"}`;
