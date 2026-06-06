@@ -187,6 +187,19 @@ function approximateTotalCount(from: number, rowsLength: number, hasNextPage: bo
   return from + rowsLength + (hasNextPage ? 1 : 0);
 }
 
+function pagedApproximateResult<T>(loadedRows: T[], page: number, pageSize: number, from: number): PagedResult<T> {
+  const rows = loadedRows.slice(0, pageSize);
+  const hasNextPage = loadedRows.length > pageSize;
+  return {
+    rows,
+    page,
+    pageSize,
+    totalCount: approximateTotalCount(from, rows.length, hasNextPage),
+    totalCountIsExact: false,
+    hasNextPage,
+  };
+}
+
 export async function getOverviewData() {
   const supabase = createServerSupabaseClient();
 
@@ -226,9 +239,9 @@ export async function getGifts(options?: QueryOptions): Promise<PagedResult<Gift
   const to = from + pageSize;
   let query = supabase
     .from("gift_logs")
-    .select("id, source_event_id, giver_id, giver_name, receiver_id, receiver_name, character_name, character_id, level, mutation, trait, occurred_at, created_at", { count: "exact" })
-    .order("created_at", { ascending: false })
-    .range(from, to - 1);
+    .select("id, source_event_id, giver_id, giver_name, receiver_id, receiver_name, character_name, character_id, level, mutation, trait, occurred_at, created_at")
+    .order("id", { ascending: false })
+    .range(from, to);
 
   if (search) {
     const maybeId = Number(search);
@@ -241,11 +254,9 @@ export async function getGifts(options?: QueryOptions): Promise<PagedResult<Gift
   if (type === "mutated") query = query.not("mutation", "is", null).neq("mutation", "Normal");
   if (type === "traited") query = query.not("trait", "is", null).neq("trait", "None");
 
-  const { data, error, count } = await query;
+  const { data, error } = await query;
   if (error) throw error;
-  const rows = (data ?? []) as GiftRow[];
-  const totalCount = count ?? rows.length;
-  return { rows, page, pageSize, totalCount, totalCountIsExact: true, hasNextPage: page * pageSize < totalCount };
+  return pagedApproximateResult((data ?? []) as GiftRow[], page, pageSize, from);
 }
 
 export async function getCharacterSales(options?: QueryOptions): Promise<PagedResult<CharacterSaleRow>> {
@@ -255,9 +266,9 @@ export async function getCharacterSales(options?: QueryOptions): Promise<PagedRe
   const to = from + pageSize;
   let query = supabase
     .from("character_sales")
-    .select("id, source_event_id, player_id, player_name, sale_type, total_cash_received, total_sold, characters, occurred_at, created_at", { count: "exact" })
-    .order("created_at", { ascending: false })
-    .range(from, to - 1);
+    .select("id, source_event_id, player_id, player_name, sale_type, total_cash_received, total_sold, characters, occurred_at, created_at")
+    .order("id", { ascending: false })
+    .range(from, to);
 
   if (search) {
     const maybeId = Number(search);
@@ -271,11 +282,9 @@ export async function getCharacterSales(options?: QueryOptions): Promise<PagedRe
   if (status === "bulk") query = query.gte("total_sold", 5);
   if (status === "high_value") query = query.gte("total_cash_received", 100000);
 
-  const { data, error, count } = await query;
+  const { data, error } = await query;
   if (error) throw error;
-  const rows = ((data ?? []) as CharacterSaleRow[]).map(normalizeSale);
-  const totalCount = count ?? rows.length;
-  return { rows, page, pageSize, totalCount, totalCountIsExact: true, hasNextPage: page * pageSize < totalCount };
+  return pagedApproximateResult(((data ?? []) as CharacterSaleRow[]).map(normalizeSale), page, pageSize, from);
 }
 
 export async function getPlayerEvents(options?: QueryOptions): Promise<PagedResult<PlayerEventRow>> {
@@ -285,17 +294,15 @@ export async function getPlayerEvents(options?: QueryOptions): Promise<PagedResu
   const to = from + pageSize;
   let query = supabase
     .from("player_events")
-    .select("id, event_type, player_id, player_name, cash, highest_wave, total_kills, created_at", { count: "exact" })
-    .order("created_at", { ascending: false })
-    .range(from, to - 1);
+    .select("id, event_type, player_id, player_name, cash, highest_wave, total_kills, created_at")
+    .order("id", { ascending: false })
+    .range(from, to);
 
   query = applyPlayerSearch(query, search);
   if (type) query = query.eq("event_type", type);
-  const { data, error, count } = await query;
+  const { data, error } = await query;
   if (error) throw error;
-  const rows = (data ?? []) as PlayerEventRow[];
-  const totalCount = count ?? rows.length;
-  return { rows, page, pageSize, totalCount, totalCountIsExact: true, hasNextPage: page * pageSize < totalCount };
+  return pagedApproximateResult((data ?? []) as PlayerEventRow[], page, pageSize, from);
 }
 
 export async function getSnapshots(options?: QueryOptions): Promise<PagedResult<SnapshotRow>> {
@@ -358,9 +365,9 @@ export async function getPurchases(options?: QueryOptions): Promise<PagedResult<
   const to = from + pageSize;
   let query = supabase
     .from("product_purchases")
-    .select("id, player_id, player_name, product_name, robux_spent, purchase_id, created_at", { count: "exact" })
-    .order("created_at", { ascending: false })
-    .range(from, to - 1);
+    .select("id, player_id, player_name, product_name, robux_spent, purchase_id, created_at")
+    .order("id", { ascending: false })
+    .range(from, to);
 
   if (search) {
     const maybeId = Number(search);
@@ -373,11 +380,9 @@ export async function getPurchases(options?: QueryOptions): Promise<PagedResult<
   if (status === "verified") query = query.not("purchase_id", "is", null);
   if (status === "missing_purchase_id") query = query.is("purchase_id", null);
 
-  const { data, error, count } = await query;
+  const { data, error } = await query;
   if (error) throw error;
-  const rows = (data ?? []) as PurchaseRow[];
-  const totalCount = count ?? rows.length;
-  return { rows, page, pageSize, totalCount, totalCountIsExact: true, hasNextPage: page * pageSize < totalCount };
+  return pagedApproximateResult((data ?? []) as PurchaseRow[], page, pageSize, from);
 }
 
 export async function getSecurityEvents(options?: QueryOptions): Promise<PagedResult<SecurityRow>> {
@@ -387,9 +392,9 @@ export async function getSecurityEvents(options?: QueryOptions): Promise<PagedRe
   const to = from + pageSize;
   let query = supabase
     .from("security_events")
-    .select("id, category, severity, player_id, player_name, created_at", { count: "exact" })
-    .order("created_at", { ascending: false })
-    .range(from, to - 1);
+    .select("id, category, severity, player_id, player_name, created_at")
+    .order("id", { ascending: false })
+    .range(from, to);
 
   if (search) {
     const maybeId = Number(search);
@@ -401,11 +406,9 @@ export async function getSecurityEvents(options?: QueryOptions): Promise<PagedRe
   }
   if (type) query = query.eq("severity", type);
 
-  const { data, error, count } = await query;
+  const { data, error } = await query;
   if (error) throw error;
-  const rows = (data ?? []) as SecurityRow[];
-  const totalCount = count ?? rows.length;
-  return { rows, page, pageSize, totalCount, totalCountIsExact: true, hasNextPage: page * pageSize < totalCount };
+  return pagedApproximateResult((data ?? []) as SecurityRow[], page, pageSize, from);
 }
 
 export async function getPlayerInvestigation(playerId: number): Promise<PlayerInvestigation> {
