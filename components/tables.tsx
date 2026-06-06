@@ -23,7 +23,7 @@ export function PlayerEventsTable({ rows }: { rows: PlayerEventRow[] }) {
           {rows.map((row) => (
             <tr key={row.id}>
               <td data-label="Event"><Link href={`/events/${row.id}`}><span className="badge">{row.event_type}</span></Link></td>
-              <td data-label="Player"><Link className="row-link" href={`/events/${row.id}`}>{row.player_name} <span className="muted">#{row.player_id}</span></Link></td>
+              <td data-label="Player"><Link className="row-link" href={`/players/${row.player_id}`}>{row.player_name} <span className="muted">#{row.player_id}</span></Link></td>
               <td data-label="Cash">{formatNumber(row.cash)}</td>
               <td data-label="Wave">{formatNumber(row.highest_wave)}</td>
               <td data-label="Kills">{formatNumber(row.total_kills)}</td>
@@ -59,7 +59,7 @@ export function SnapshotTable({ rows }: { rows: SnapshotRow[] }) {
           {rows.map((row) => (
             <tr key={row.id}>
               <td data-label="Kind"><Link href={`/snapshots/${row.id}`}><span className="badge">{row.snapshot_kind}</span></Link></td>
-              <td data-label="Player"><Link className="row-link" href={`/snapshots/${row.id}`}>{row.player_name} <span className="muted">#{row.player_id}</span></Link></td>
+              <td data-label="Player"><Link className="row-link" href={`/players/${row.player_id}`}>{row.player_name} <span className="muted">#{row.player_id}</span></Link></td>
               <td data-label="Cash">{formatNumber(row.cash)}</td>
               <td data-label="Wave">{formatNumber(row.highest_wave)}</td>
               <td data-label="Kills">{formatNumber(row.total_kills)}</td>
@@ -94,7 +94,7 @@ export function PurchasesTable({ rows }: { rows: PurchaseRow[] }) {
           {rows.map((row) => (
             <tr key={row.id}>
               <td data-label="Product">{row.product_name}</td>
-              <td data-label="Player"><span className="row-link">{row.player_name}</span> <span className="muted">#{row.player_id}</span></td>
+              <td data-label="Player"><Link className="row-link" href={`/players/${row.player_id}`}>{row.player_name}</Link> <span className="muted">#{row.player_id}</span></td>
               <td data-label="Robux">{formatNumber(row.robux_spent)}</td>
               <td data-label="Purchase ID" className="muted">{row.purchase_id ?? "N/A"}</td>
               <td data-label="Date">{formatDate(row.created_at)}</td>

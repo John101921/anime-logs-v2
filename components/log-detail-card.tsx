@@ -118,6 +118,9 @@ export function PlayerEventDetailCard({ event }: { event: PlayerEventDetail }) {
         { label: "Session", value: event.session_duration_seconds != null ? `${formatNumber(event.session_duration_seconds)}s` : "N/A" },
       ]}
     >
+      <div className="evidence-toolbar">
+        <a className="view-button" href={`/players/${event.player_id}`}>Open Player Investigation</a>
+      </div>
       <div className="evidence-grid">
         <Section title="Inventory">
           <EvidenceList rows={event.inventory} render={(entry) => describeCharacter(entry)} />
@@ -150,6 +153,9 @@ export function SnapshotDetailCard({ snapshot }: { snapshot: SnapshotDetail }) {
         { label: "Profile Version", value: snapshot.profile_version ?? "N/A" },
       ]}
     >
+      <div className="evidence-toolbar">
+        <a className="view-button" href={`/players/${snapshot.player_id}`}>Open Player Investigation</a>
+      </div>
       <div className="evidence-grid">
         <Section title="Inventory">
           <EvidenceList rows={snapshot.inventory} render={(entry) => describeCharacter(entry)} />

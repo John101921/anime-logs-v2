@@ -81,6 +81,14 @@ export type SecurityRow = {
   created_at: string;
 };
 
+export type PlayerInvestigation = {
+  playerId: number;
+  events: PlayerEventRow[];
+  snapshots: SnapshotRow[];
+  purchases: PurchaseRow[];
+  security: SecurityRow[];
+};
+
 export type QueryOptions = {
   page?: number;
   pageSize?: number;
@@ -260,6 +268,44 @@ export async function getSecurityEvents(options?: QueryOptions): Promise<PagedRe
   if (error) throw error;
   const rows = (data ?? []) as SecurityRow[];
   return { rows: rows.slice(0, pageSize), page, pageSize, hasNextPage: rows.length > pageSize };
+}
+
+export async function getPlayerInvestigation(playerId: number): Promise<PlayerInvestigation> {
+  const supabase = createServerSupabaseClient();
+  const [events, snapshots, purchases, security] = await Promise.all([
+    supabase
+      .from("player_events")
+      .select("id, event_type, player_id, player_name, cash, highest_wave, total_kills, created_at")
+      .eq("player_id", playerId)
+      .order("created_at", { ascending: false })
+      .limit(25),
+    supabase
+      .from("player_snapshots")
+      .select("id, snapshot_kind, player_id, player_name, cash, highest_wave, total_kills, created_at")
+      .eq("player_id", playerId)
+      .order("created_at", { ascending: false })
+      .limit(25),
+    supabase
+      .from("product_purchases")
+      .select("id, player_id, player_name, product_name, robux_spent, purchase_id, created_at")
+      .eq("player_id", playerId)
+      .order("created_at", { ascending: false })
+      .limit(25),
+    supabase
+      .from("security_events")
+      .select("id, category, severity, player_id, player_name, created_at")
+      .eq("player_id", playerId)
+      .order("created_at", { ascending: false })
+      .limit(25),
+  ]);
+
+  return {
+    playerId,
+    events: (events.data ?? []) as PlayerEventRow[],
+    snapshots: (snapshots.data ?? []) as SnapshotRow[],
+    purchases: (purchases.data ?? []) as PurchaseRow[],
+    security: (security.data ?? []) as SecurityRow[],
+  };
 }
 
 function asArray<T>(value: unknown): T[] {
