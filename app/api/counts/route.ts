@@ -23,10 +23,10 @@ type Counts = {
   security: number | null;
 };
 
-async function getExactCount(supabase: ReturnType<typeof createServerSupabaseClient>, table: string) {
+async function getEstimatedCount(supabase: ReturnType<typeof createServerSupabaseClient>, table: string) {
   const { count, error } = await supabase
     .from(table)
-    .select("id", { count: "exact", head: true });
+    .select("id", { count: "estimated", head: true });
 
   if (error) {
     return { count: null, error: error.message };
@@ -37,21 +37,9 @@ async function getExactCount(supabase: ReturnType<typeof createServerSupabaseCli
 export async function GET() {
   const startedAt = Date.now();
   const supabase = createServerSupabaseClient();
-  const { data: rpcCounts, error: rpcError } = await supabase.rpc("get_dashboard_counts");
-
-  if (!rpcError && rpcCounts && typeof rpcCounts === "object") {
-    return NextResponse.json({
-      counts: rpcCounts as Counts,
-      errors: {},
-      estimated: false,
-      source: "rpc",
-      duration_ms: Date.now() - startedAt,
-    });
-  }
-
   const results = await Promise.all(
     countTargets.map(async ([key, table]) => {
-      const result = await getExactCount(supabase, table);
+      const result = await getEstimatedCount(supabase, table);
       return [key, result] as const;
     }),
   );
@@ -66,13 +54,10 @@ export async function GET() {
   );
 
   return NextResponse.json({
-    counts,
-    errors: {
-      rpc: rpcError?.message,
-      ...errors,
-    },
-    estimated: false,
-    source: "fallback",
+    counts: counts as Counts,
+    errors,
+    estimated: true,
+    source: "estimated_table_counts",
     duration_ms: Date.now() - startedAt,
   });
 }
