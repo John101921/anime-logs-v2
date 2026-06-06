@@ -13,6 +13,7 @@ export default async function PlayersPage({
   const params = await searchParams;
   const pageSize = Number(params.pageSize) || 10;
   const result = await getLatestPlayers({ search: params.q, page: Number(params.page) || 1, pageSize, type: params.type, status: params.status });
+  const countKey = !params.q && !params.type && !params.status ? "players" : undefined;
 
   return (
     <DashboardShell title="Players" active="Players">
@@ -28,6 +29,7 @@ export default async function PlayersPage({
             totalLabel="Total Players"
             totalCount={result.totalCount}
             totalCountIsExact={result.totalCountIsExact}
+            countKey={countKey}
             typeOptions={[
               { label: "Full snapshot", value: "full" },
               { label: "Compact snapshot", value: "compact" },

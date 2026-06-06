@@ -13,6 +13,7 @@ export default async function EventsPage({
   const params = await searchParams;
   const pageSize = Number(params.pageSize) || 10;
   const result = await getPlayerEvents({ search: params.q, page: Number(params.page) || 1, pageSize, type: params.type, status: params.status });
+  const countKey = !params.q && !params.type && !params.status ? "events" : undefined;
   return (
     <DashboardShell title="Events" active="Events">
       <section className="table-card">
@@ -27,6 +28,7 @@ export default async function EventsPage({
             totalLabel="Total Events"
             totalCount={result.totalCount}
             totalCountIsExact={result.totalCountIsExact}
+            countKey={countKey}
             typeOptions={[
               { label: "Join", value: "join" },
               { label: "Leave", value: "leave" },

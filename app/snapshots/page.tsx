@@ -13,6 +13,7 @@ export default async function SnapshotsPage({
   const params = await searchParams;
   const pageSize = Number(params.pageSize) || 10;
   const result = await getSnapshots({ search: params.q, page: Number(params.page) || 1, pageSize, type: params.type, status: params.status });
+  const countKey = !params.q && !params.type && !params.status ? "snapshots" : undefined;
   return (
     <DashboardShell title="Snapshots" active="Snapshots">
       <section className="table-card">
@@ -27,6 +28,7 @@ export default async function SnapshotsPage({
             totalLabel="Total Snapshots"
             totalCount={result.totalCount}
             totalCountIsExact={result.totalCountIsExact}
+            countKey={countKey}
             typeOptions={[
               { label: "Full snapshot", value: "full" },
               { label: "Compact snapshot", value: "compact" },

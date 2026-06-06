@@ -18,6 +18,9 @@ import {
 import Link from "next/link";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { AutoFilterSelect } from "@/components/auto-filter-select";
+import { AsyncCount } from "@/components/async-count";
+
+type CountKey = "players" | "events" | "snapshots" | "purchases" | "gifts" | "sales" | "security";
 
 const nav = [
   { href: "/", label: "Home", icon: Home },
@@ -128,6 +131,7 @@ export function SearchForm({
   totalLabel,
   totalCount,
   totalCountIsExact = true,
+  countKey,
   typeOptions = [],
   statusOptions = [],
 }: {
@@ -140,6 +144,7 @@ export function SearchForm({
   totalLabel?: string;
   totalCount?: number;
   totalCountIsExact?: boolean;
+  countKey?: CountKey;
   typeOptions?: Array<{ label: string; value: string }>;
   statusOptions?: Array<{ label: string; value: string }>;
 }) {
@@ -158,7 +163,9 @@ export function SearchForm({
       {totalLabel ? (
         <div className="table-total">
           <span>{totalLabel}</span>
-          <strong>{new Intl.NumberFormat("en-US").format(totalCount ?? 0)}{totalCountIsExact ? "" : "+"}</strong>
+          <strong>
+            <AsyncCount countKey={countKey} fallback={totalCount ?? 0} fallbackIsExact={totalCountIsExact} />
+          </strong>
         </div>
       ) : null}
       {typeOptions.length > 0 ? (

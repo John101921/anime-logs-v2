@@ -13,6 +13,7 @@ export default async function GiftsPage({
   const params = await searchParams;
   const pageSize = Number(params.pageSize) || 10;
   const result = await getGifts({ search: params.q, page: Number(params.page) || 1, pageSize, type: params.type });
+  const countKey = !params.q && !params.type && !params.status ? "gifts" : undefined;
 
   return (
     <DashboardShell title="Gifts" active="Gifts">
@@ -27,6 +28,7 @@ export default async function GiftsPage({
             totalLabel="Total Gifts"
             totalCount={result.totalCount}
             totalCountIsExact={result.totalCountIsExact}
+            countKey={countKey}
             typeOptions={[
               { label: "Mutated character", value: "mutated" },
               { label: "Trait character", value: "traited" },

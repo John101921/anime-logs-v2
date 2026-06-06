@@ -13,6 +13,7 @@ export default async function SecurityPage({
   const params = await searchParams;
   const pageSize = Number(params.pageSize) || 10;
   const result = await getSecurityEvents({ search: params.q, page: Number(params.page) || 1, pageSize, type: params.type, status: params.status });
+  const countKey = !params.q && !params.type && !params.status ? "security" : undefined;
   return (
     <DashboardShell title="Security" active="Security">
       <section className="table-card">
@@ -27,6 +28,7 @@ export default async function SecurityPage({
             totalLabel="Total Security Events"
             totalCount={result.totalCount}
             totalCountIsExact={result.totalCountIsExact}
+            countKey={countKey}
             typeOptions={[
               { label: "Critical", value: "critical" },
               { label: "High", value: "high" },

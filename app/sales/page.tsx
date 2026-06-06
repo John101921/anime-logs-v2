@@ -19,6 +19,7 @@ export default async function SalesPage({
     type: params.type,
     status: params.status,
   });
+  const countKey = !params.q && !params.type && !params.status ? "sales" : undefined;
 
   return (
     <DashboardShell title="Character Sales" active="Sales">
@@ -34,6 +35,7 @@ export default async function SalesPage({
             totalLabel="Total Sales"
             totalCount={result.totalCount}
             totalCountIsExact={result.totalCountIsExact}
+            countKey={countKey}
             typeOptions={[
               { label: "Single", value: "single" },
               { label: "Bulk", value: "bulk" },

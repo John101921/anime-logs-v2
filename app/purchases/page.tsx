@@ -13,6 +13,7 @@ export default async function PurchasesPage({
   const params = await searchParams;
   const pageSize = Number(params.pageSize) || 10;
   const result = await getPurchases({ search: params.q, page: Number(params.page) || 1, pageSize, type: params.type, status: params.status });
+  const countKey = !params.q && !params.type && !params.status ? "purchases" : undefined;
   return (
     <DashboardShell title="Purchases" active="Purchases">
       <section className="table-card">
@@ -26,6 +27,7 @@ export default async function PurchasesPage({
             totalLabel="Total Purchases"
             totalCount={result.totalCount}
             totalCountIsExact={result.totalCountIsExact}
+            countKey={countKey}
             statusOptions={[
               { label: "Verified", value: "verified" },
               { label: "Missing purchase ID", value: "missing_purchase_id" },
