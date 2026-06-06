@@ -348,6 +348,9 @@ export async function getLatestPlayers(options?: QueryOptions): Promise<PagedRes
     ...(row as Omit<SnapshotRow, "id"> & { snapshot_id: number }),
     id: (row as { snapshot_id: number }).snapshot_id,
   })) as SnapshotRow[];
+  if (loadedRows.length === 0 && page === 1 && !search && !type) {
+    return getLatestPlayersFromSnapshots(options);
+  }
   return pagedApproximateResult(loadedRows, page, pageSize, from);
 }
 

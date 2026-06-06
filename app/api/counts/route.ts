@@ -34,6 +34,21 @@ async function getEstimatedCount(supabase: ReturnType<typeof createServerSupabas
   return { count: count ?? 0, error: null };
 }
 
+async function getRecentPlayerEstimate(supabase: ReturnType<typeof createServerSupabaseClient>) {
+  const { data, error } = await supabase
+    .from("player_snapshots")
+    .select("player_id")
+    .order("id", { ascending: false })
+    .limit(5000);
+
+  if (error) {
+    return { count: null, error: error.message };
+  }
+
+  const playerIds = new Set((data ?? []).map((row) => (row as { player_id: number }).player_id));
+  return { count: playerIds.size, error: null };
+}
+
 export async function GET() {
   const startedAt = Date.now();
   const supabase = createServerSupabaseClient();
@@ -46,15 +61,25 @@ export async function GET() {
 
   const counts = {
     ...Object.fromEntries(results.map(([key, result]) => [key, result.count])),
-  };
+  } as Counts;
   const errors = Object.fromEntries(
     results
       .filter(([, result]) => result.error)
       .map(([key, result]) => [key, result.error]),
   );
 
+  if (!counts.players || counts.players <= 0) {
+    const playerEstimate = await getRecentPlayerEstimate(supabase);
+    if (playerEstimate.count != null && playerEstimate.count > 0) {
+      counts.players = playerEstimate.count;
+    }
+    if (playerEstimate.error) {
+      errors.players_recent_estimate = playerEstimate.error;
+    }
+  }
+
   return NextResponse.json({
-    counts: counts as Counts,
+    counts,
     errors,
     estimated: true,
     source: "estimated_table_counts",
