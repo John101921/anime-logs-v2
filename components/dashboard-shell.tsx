@@ -13,6 +13,7 @@ import {
   Users,
 } from "lucide-react";
 import Link from "next/link";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 const nav = [
   { href: "/", label: "Home", icon: Home },
@@ -71,6 +72,7 @@ export function DashboardShell({
           <header className="topbar">
             <h1>{title}</h1>
             <div className="user-pill">
+              <ThemeToggle />
               <span className="avatar">
                 <Bell size={18} />
               </span>
