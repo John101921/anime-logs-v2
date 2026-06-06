@@ -37,16 +37,36 @@ export default async function GiftDetailPage({ params }: { params: Promise<{ id:
           <div className="detail-stat"><span>Occurred</span><strong>{formatDate(gift.occurred_at)}</strong></div>
         </section>
 
-        <section className="evidence-meta">
-          <div><span>Giver</span><strong><Link href={`/players/${gift.giver_id}`}>{gift.giver_name} #{gift.giver_id}</Link></strong></div>
-          <div><span>Receiver</span><strong><Link href={`/players/${gift.receiver_id}`}>{gift.receiver_name} #{gift.receiver_id}</Link></strong></div>
-          <div><span>Event ID</span><strong>{gift.source_event_id}</strong></div>
-          <div><span>Interpretation</span><strong>One character moved from giver to receiver. Use this with nearby snapshots to prove ownership before and after the gift.</strong></div>
+        <section className="transfer-flow">
+          <div className="transfer-node">
+            <span>Giver</span>
+            <strong><Link href={`/players/${gift.giver_id}`}>{gift.giver_name}</Link></strong>
+            <p>Player ID #{gift.giver_id}</p>
+          </div>
+          <div className="transfer-arrow">Transfer</div>
+          <div className="transfer-node">
+            <span>Receiver</span>
+            <strong><Link href={`/players/${gift.receiver_id}`}>{gift.receiver_name}</Link></strong>
+            <p>Player ID #{gift.receiver_id}</p>
+          </div>
         </section>
 
-        <section className="evidence-section">
-          <h3>Raw Payload</h3>
-          <pre className="json-block">{JSON.stringify(gift.payload, null, 2)}</pre>
+        <section className="operator-summary-grid">
+          <div className="operator-summary primary">
+            <span>What this means</span>
+            <strong>One character moved from giver to receiver.</strong>
+            <p>Use this with snapshots around the same time to prove ownership before and after the transfer.</p>
+          </div>
+          <div className="operator-summary">
+            <span>Character ID</span>
+            <strong className="mono-value">{gift.character_id ?? "Not recorded"}</strong>
+            <p>{gift.character_name ?? "Unknown character"}</p>
+          </div>
+          <div className="operator-summary">
+            <span>Evidence ID</span>
+            <strong className="mono-value">{gift.source_event_id}</strong>
+            <p>Stable event ID for retry-safe ingestion.</p>
+          </div>
         </section>
       </article>
     </DashboardShell>
