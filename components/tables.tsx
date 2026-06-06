@@ -2,10 +2,6 @@ import { formatDate, formatNumber } from "@/lib/format";
 import type { PlayerEventRow, PurchaseRow, SecurityRow, SnapshotRow } from "@/lib/data";
 import Link from "next/link";
 
-function SelectBox({ checked }: { checked?: boolean }) {
-  return <span className={checked ? "checkbox checked" : "checkbox"} />;
-}
-
 export function PlayerEventsTable({ rows }: { rows: PlayerEventRow[] }) {
   if (rows.length === 0) return <div className="empty">No player events yet.</div>;
   return (
@@ -13,7 +9,6 @@ export function PlayerEventsTable({ rows }: { rows: PlayerEventRow[] }) {
       <table>
         <thead>
           <tr>
-            <th className="select-cell"><SelectBox /></th>
             <th>Event</th>
             <th>Player</th>
             <th>Cash</th>
@@ -25,9 +20,8 @@ export function PlayerEventsTable({ rows }: { rows: PlayerEventRow[] }) {
           </tr>
         </thead>
         <tbody>
-          {rows.map((row, index) => (
+          {rows.map((row) => (
             <tr key={row.id}>
-              <td className="select-cell" data-label="Select"><SelectBox checked={index % 3 === 0} /></td>
               <td data-label="Event"><Link href={`/events/${row.id}`}><span className="badge">{row.event_type}</span></Link></td>
               <td data-label="Player"><Link className="row-link" href={`/events/${row.id}`}>{row.player_name} <span className="muted">#{row.player_id}</span></Link></td>
               <td data-label="Cash">{formatNumber(row.cash)}</td>
@@ -51,7 +45,6 @@ export function SnapshotTable({ rows }: { rows: SnapshotRow[] }) {
       <table>
         <thead>
           <tr>
-            <th className="select-cell"><SelectBox /></th>
             <th>Kind</th>
             <th>Player</th>
             <th>Cash</th>
@@ -63,9 +56,8 @@ export function SnapshotTable({ rows }: { rows: SnapshotRow[] }) {
           </tr>
         </thead>
         <tbody>
-          {rows.map((row, index) => (
+          {rows.map((row) => (
             <tr key={row.id}>
-              <td className="select-cell" data-label="Select"><SelectBox checked={index % 3 === 0} /></td>
               <td data-label="Kind"><Link href={`/snapshots/${row.id}`}><span className="badge">{row.snapshot_kind}</span></Link></td>
               <td data-label="Player"><Link className="row-link" href={`/snapshots/${row.id}`}>{row.player_name} <span className="muted">#{row.player_id}</span></Link></td>
               <td data-label="Cash">{formatNumber(row.cash)}</td>
@@ -89,7 +81,6 @@ export function PurchasesTable({ rows }: { rows: PurchaseRow[] }) {
       <table>
         <thead>
           <tr>
-            <th className="select-cell"><SelectBox /></th>
             <th>Product</th>
             <th>Player</th>
             <th>Robux</th>
@@ -100,9 +91,8 @@ export function PurchasesTable({ rows }: { rows: PurchaseRow[] }) {
           </tr>
         </thead>
         <tbody>
-          {rows.map((row, index) => (
+          {rows.map((row) => (
             <tr key={row.id}>
-              <td className="select-cell" data-label="Select"><SelectBox checked={index % 3 === 0} /></td>
               <td data-label="Product">{row.product_name}</td>
               <td data-label="Player"><span className="row-link">{row.player_name}</span> <span className="muted">#{row.player_id}</span></td>
               <td data-label="Robux">{formatNumber(row.robux_spent)}</td>
@@ -125,7 +115,6 @@ export function SecurityTable({ rows }: { rows: SecurityRow[] }) {
       <table>
         <thead>
           <tr>
-            <th className="select-cell"><SelectBox /></th>
             <th>Category</th>
             <th>Severity</th>
             <th>Player</th>
@@ -135,9 +124,8 @@ export function SecurityTable({ rows }: { rows: SecurityRow[] }) {
           </tr>
         </thead>
         <tbody>
-          {rows.map((row, index) => (
+          {rows.map((row) => (
             <tr key={row.id}>
-              <td className="select-cell" data-label="Select"><SelectBox checked={index % 3 === 0} /></td>
               <td data-label="Category">{row.category}</td>
               <td data-label="Severity"><span className={row.severity === "critical" || row.severity === "high" ? "badge danger" : "badge"}>{row.severity}</span></td>
               <td data-label="Player">{row.player_name ?? "N/A"} {row.player_id ? <span className="muted">#{row.player_id}</span> : null}</td>

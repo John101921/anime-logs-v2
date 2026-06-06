@@ -28,15 +28,27 @@ export function Pagination({
   pageSize?: number;
 }) {
   const preserved = { q: query, type, status, pageSize };
+  const pages = Array.from(new Set([1, Math.max(1, page - 1), page, page + 1, page + 2])).filter((item) => item > 0);
   return (
     <div className="pagination">
-      <Link className={page <= 1 ? "page-button disabled" : "page-button"} href={pageHref(pathname, Math.max(1, page - 1), preserved)}>
-        Previous
-      </Link>
-      <span className="muted">Page {page}</span>
-      <Link className={!hasNextPage ? "page-button disabled" : "page-button"} href={pageHref(pathname, page + 1, preserved)}>
-        Next
-      </Link>
+      <div className="page-size-summary">
+        <span>Show</span>
+        <strong>{pageSize ?? 10}</strong>
+      </div>
+      <div className="page-controls">
+        <Link className={page <= 1 ? "page-icon disabled" : "page-icon"} href={pageHref(pathname, Math.max(1, page - 1), preserved)}>
+          ‹
+        </Link>
+        {pages.map((item) => (
+          <Link key={item} className={item === page ? "page-number active" : "page-number"} href={pageHref(pathname, item, preserved)}>
+            {item}
+          </Link>
+        ))}
+        {hasNextPage ? <span className="muted">...</span> : null}
+        <Link className={!hasNextPage ? "page-icon disabled" : "page-icon"} href={pageHref(pathname, page + 1, preserved)}>
+          ›
+        </Link>
+      </div>
     </div>
   );
 }
