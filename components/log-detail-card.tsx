@@ -1,4 +1,4 @@
-import { formatDate, formatNumber } from "@/lib/format";
+import { formatDate, formatDuration, formatNumber } from "@/lib/format";
 import type { InventoryEntry, ItemEntry, PlayerEventDetail, SnapshotDetail } from "@/lib/data";
 
 function describeCharacter(entry: InventoryEntry) {
@@ -117,7 +117,7 @@ export function PlayerEventDetailCard({ event }: { event: PlayerEventDetail }) {
         { label: "Cash", value: formatNumber(event.cash) },
         { label: "Highest Wave", value: formatNumber(event.highest_wave) },
         { label: "Total Kills", value: formatNumber(event.total_kills) },
-        { label: "Session", value: event.session_duration_seconds != null ? `${formatNumber(event.session_duration_seconds)}s` : "N/A" },
+        { label: "Session", value: formatDuration(event.session_duration_seconds) },
       ]}
     >
       <div className="evidence-toolbar">
