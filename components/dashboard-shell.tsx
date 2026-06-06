@@ -122,6 +122,12 @@ export function SearchForm({
           style={{ paddingLeft: 38 }}
         />
       </div>
+      <select className="input small-input" name="status" defaultValue="">
+        <option value="">Status: All</option>
+      </select>
+      <select className="input small-input" name="type" defaultValue="">
+        <option value="">Type: All</option>
+      </select>
       <button className="button" type="submit">Search</button>
     </form>
   );

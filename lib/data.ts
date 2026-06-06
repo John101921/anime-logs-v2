@@ -11,6 +11,34 @@ export type PlayerEventRow = {
   created_at: string;
 };
 
+export type JsonRecord = Record<string, unknown>;
+
+export type InventoryEntry = {
+  character_name?: string;
+  character_id?: string;
+  level?: number;
+  mutation?: string;
+  trait?: string;
+  position?: string | number;
+};
+
+export type ItemEntry = {
+  item_name?: string;
+  quantity?: number;
+};
+
+export type PlayerEventDetail = PlayerEventRow & {
+  source_event_id: string;
+  joined_at: string | null;
+  left_at: string | null;
+  session_duration_seconds: number | null;
+  occurred_at: string;
+  payload: JsonRecord;
+  inventory: InventoryEntry[];
+  items: ItemEntry[];
+  equipped: InventoryEntry[];
+};
+
 export type SnapshotRow = {
   id: number;
   snapshot_kind: string;
@@ -20,6 +48,18 @@ export type SnapshotRow = {
   highest_wave: number;
   total_kills: number;
   created_at: string;
+};
+
+export type SnapshotDetail = SnapshotRow & {
+  source_event_id: string;
+  occurred_at: string;
+  payload: JsonRecord;
+  inventory: InventoryEntry[];
+  items: ItemEntry[];
+  equipped: InventoryEntry[];
+  changed_fields: JsonRecord;
+  state_hash: string | null;
+  profile_version: number | null;
 };
 
 export type PurchaseRow = {
@@ -202,4 +242,60 @@ export async function getSecurityEvents(options?: QueryOptions): Promise<PagedRe
   if (error) throw error;
   const rows = (data ?? []) as SecurityRow[];
   return { rows: rows.slice(0, pageSize), page, pageSize, hasNextPage: rows.length > pageSize };
+}
+
+function asArray<T>(value: unknown): T[] {
+  return Array.isArray(value) ? (value as T[]) : [];
+}
+
+export async function getPlayerEventDetail(id: number): Promise<PlayerEventDetail | null> {
+  const supabase = createServerSupabaseClient();
+  const { data, error } = await supabase
+    .from("player_events")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!data) return null;
+
+  const payload = (data.payload ?? {}) as JsonRecord;
+  return {
+    ...(data as PlayerEventRow),
+    source_event_id: data.source_event_id,
+    joined_at: data.joined_at,
+    left_at: data.left_at,
+    session_duration_seconds: data.session_duration_seconds,
+    occurred_at: data.occurred_at,
+    payload,
+    inventory: asArray<InventoryEntry>(payload.inventory),
+    items: asArray<ItemEntry>(payload.items),
+    equipped: asArray<InventoryEntry>(payload.equipped),
+  };
+}
+
+export async function getSnapshotDetail(id: number): Promise<SnapshotDetail | null> {
+  const supabase = createServerSupabaseClient();
+  const { data, error } = await supabase
+    .from("player_snapshots")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!data) return null;
+
+  const payload = (data.payload ?? {}) as JsonRecord;
+  return {
+    ...(data as SnapshotRow),
+    source_event_id: data.source_event_id,
+    occurred_at: data.occurred_at,
+    payload,
+    inventory: asArray<InventoryEntry>(data.inventory),
+    items: asArray<ItemEntry>(data.items),
+    equipped: asArray<InventoryEntry>(data.equipped),
+    changed_fields: (data.changed_fields ?? {}) as JsonRecord,
+    state_hash: data.state_hash,
+    profile_version: data.profile_version,
+  };
 }
