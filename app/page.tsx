@@ -2,7 +2,7 @@ import { CardHeader, DashboardShell } from "@/components/dashboard-shell";
 import { WorkbenchCard } from "@/components/operator-panels";
 import { PlayerJump } from "@/components/player-jump";
 import { StatCard } from "@/components/stat-card";
-import { PlayerEventsTable, PurchasesTable, SecurityTable } from "@/components/tables";
+import { CharacterSalesTable, GiftsTable, PlayerEventsTable, PurchasesTable, SecurityTable } from "@/components/tables";
 import { getOverviewData } from "@/lib/data";
 import { formatDate, formatNumber } from "@/lib/format";
 
@@ -11,6 +11,7 @@ export const dynamic = "force-dynamic";
 export default async function HomePage() {
   const data = await getOverviewData();
   const totalRobux = data.purchases.reduce((sum, row) => sum + Number(row.robux_spent ?? 0), 0);
+  const totalSaleCash = data.sales.reduce((sum, row) => sum + Number(row.total_cash_received ?? 0), 0);
   const health = data.health;
   const lastIngested = health?.last_ingested_at ? formatDate(health.last_ingested_at) : "No data";
 
@@ -32,7 +33,10 @@ export default async function HomePage() {
         <StatCard label="Player events / hour" value={formatNumber(health?.player_events_last_hour ?? 0)} />
         <StatCard label="Snapshots / hour" value={formatNumber(health?.snapshots_last_hour ?? 0)} />
         <StatCard label="Purchases / hour" value={formatNumber(health?.purchases_last_hour ?? 0)} />
+        <StatCard label="Gifts / hour" value={formatNumber(health?.gifts_last_hour ?? 0)} />
+        <StatCard label="Sales / hour" value={formatNumber(health?.sales_last_hour ?? 0)} />
         <StatCard label="Recent Robux" value={formatNumber(totalRobux)} />
+        <StatCard label="Recent sale cash" value={formatNumber(totalSaleCash)} />
       </section>
 
       <section className="health-strip">
@@ -45,6 +49,8 @@ export default async function HomePage() {
         <WorkbenchCard title="Player Investigation" description="Search by Player ID/name, inspect lifecycle logs, purchases, snapshots and security events." href="/players" label="Open" />
         <WorkbenchCard title="Item Loss Evidence" description="Open snapshots and compare inventory/equipped/items around reported loss times." href="/snapshots" label="Review" />
         <WorkbenchCard title="Purchase Verification" description="Check purchase IDs, Robux spent, and missing purchase-id records." href="/purchases" label="Verify" />
+        <WorkbenchCard title="Character Sales" description="Audit characters converted into cash, including bulk and high-value sales." href="/sales" label="Audit" />
+        <WorkbenchCard title="Gift Transfers" description="Track giver, receiver, and character details for player-to-player transfers." href="/gifts" label="Trace" />
         <WorkbenchCard title="Security Monitor" description="Review high-risk server-side security events by severity." href="/security" label="Monitor" />
       </section>
 
@@ -52,6 +58,17 @@ export default async function HomePage() {
         <CardHeader title="Latest Player Lifecycle Logs" />
         <PlayerEventsTable rows={data.events} />
       </section>
+
+      <div className="split-grid">
+        <section className="table-card">
+          <CardHeader title="Recent Character Sales" />
+          <CharacterSalesTable rows={data.sales} />
+        </section>
+        <section className="table-card">
+          <CardHeader title="Recent Gifts" />
+          <GiftsTable rows={data.gifts} />
+        </section>
+      </div>
 
       <div className="split-grid">
         <section className="table-card">

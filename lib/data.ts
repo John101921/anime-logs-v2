@@ -72,6 +72,46 @@ export type PurchaseRow = {
   created_at: string;
 };
 
+export type GiftRow = {
+  id: number;
+  source_event_id: string;
+  giver_id: number;
+  giver_name: string;
+  receiver_id: number;
+  receiver_name: string;
+  character_name: string | null;
+  character_id: string | null;
+  level: number;
+  mutation: string | null;
+  trait: string | null;
+  occurred_at: string;
+  created_at: string;
+};
+
+export type SaleCharacter = {
+  character_name?: string;
+  name?: string;
+  character_id?: string;
+  id?: string;
+  level?: number;
+  mutation?: string;
+  trait?: string;
+  cash_received?: number;
+};
+
+export type CharacterSaleRow = {
+  id: number;
+  source_event_id: string;
+  player_id: number;
+  player_name: string;
+  sale_type: string | null;
+  total_cash_received: number;
+  total_sold: number;
+  characters: SaleCharacter[];
+  occurred_at: string;
+  created_at: string;
+};
+
 export type SecurityRow = {
   id: number;
   category: string;
@@ -86,6 +126,8 @@ export type PlayerInvestigation = {
   events: PlayerEventRow[];
   snapshots: SnapshotRow[];
   purchases: PurchaseRow[];
+  gifts: GiftRow[];
+  sales: CharacterSaleRow[];
   security: SecurityRow[];
 };
 
@@ -132,13 +174,22 @@ function applyTextSearch<T>(query: T, search: string, columns: string[]): T {
   return (query as { or: (filters: string) => T }).or(columns.map((column) => `${column}.ilike.%${escaped}%`).join(","));
 }
 
+function normalizeSale(row: CharacterSaleRow): CharacterSaleRow {
+  return {
+    ...row,
+    characters: asArray<SaleCharacter>(row.characters),
+  };
+}
+
 export async function getOverviewData() {
   const supabase = createServerSupabaseClient();
 
-  const [events, snapshots, purchases, security, health] = await Promise.all([
+  const [events, snapshots, purchases, gifts, sales, security, health] = await Promise.all([
     supabase.from("player_events").select("id, event_type, player_id, player_name, cash, highest_wave, total_kills, created_at").order("created_at", { ascending: false }).limit(12),
     supabase.from("player_snapshots").select("id, snapshot_kind, player_id, player_name, cash, highest_wave, total_kills, created_at").order("created_at", { ascending: false }).limit(8),
     supabase.from("product_purchases").select("id, player_id, player_name, product_name, robux_spent, purchase_id, created_at").order("created_at", { ascending: false }).limit(8),
+    supabase.from("gift_logs").select("id, source_event_id, giver_id, giver_name, receiver_id, receiver_name, character_name, character_id, level, mutation, trait, occurred_at, created_at").order("created_at", { ascending: false }).limit(8),
+    supabase.from("character_sales").select("id, source_event_id, player_id, player_name, sale_type, total_cash_received, total_sold, characters, occurred_at, created_at").order("created_at", { ascending: false }).limit(8),
     supabase.from("security_events").select("id, category, severity, player_id, player_name, created_at").order("created_at", { ascending: false }).limit(8),
     supabase.from("ingest_health_summary").select("*").maybeSingle(),
   ]);
@@ -147,15 +198,76 @@ export async function getOverviewData() {
     events: (events.data ?? []) as PlayerEventRow[],
     snapshots: (snapshots.data ?? []) as SnapshotRow[],
     purchases: (purchases.data ?? []) as PurchaseRow[],
+    gifts: (gifts.data ?? []) as GiftRow[],
+    sales: ((sales.data ?? []) as CharacterSaleRow[]).map(normalizeSale),
     security: (security.data ?? []) as SecurityRow[],
     health: health.data as {
       player_events_last_hour: number;
       snapshots_last_hour: number;
       purchases_last_hour: number;
+      gifts_last_hour?: number;
+      sales_last_hour?: number;
       security_events_last_hour: number;
       last_ingested_at: string | null;
     } | null,
   };
+}
+
+export async function getGifts(options?: QueryOptions): Promise<PagedResult<GiftRow>> {
+  const supabase = createServerSupabaseClient();
+  const { page, pageSize, search, type } = normalizeQueryOptions(options);
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize;
+  let query = supabase
+    .from("gift_logs")
+    .select("id, source_event_id, giver_id, giver_name, receiver_id, receiver_name, character_name, character_id, level, mutation, trait, occurred_at, created_at")
+    .order("created_at", { ascending: false })
+    .range(from, to);
+
+  if (search) {
+    const maybeId = Number(search);
+    if (Number.isSafeInteger(maybeId)) {
+      query = query.or(`giver_id.eq.${maybeId},receiver_id.eq.${maybeId}`);
+    } else {
+      query = applyTextSearch(query, search, ["giver_name", "receiver_name", "character_name", "character_id", "mutation", "trait"]);
+    }
+  }
+  if (type === "mutated") query = query.not("mutation", "is", null).neq("mutation", "Normal");
+  if (type === "traited") query = query.not("trait", "is", null).neq("trait", "None");
+
+  const { data, error } = await query;
+  if (error) throw error;
+  const rows = (data ?? []) as GiftRow[];
+  return { rows: rows.slice(0, pageSize), page, pageSize, hasNextPage: rows.length > pageSize };
+}
+
+export async function getCharacterSales(options?: QueryOptions): Promise<PagedResult<CharacterSaleRow>> {
+  const supabase = createServerSupabaseClient();
+  const { page, pageSize, search, type, status } = normalizeQueryOptions(options);
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize;
+  let query = supabase
+    .from("character_sales")
+    .select("id, source_event_id, player_id, player_name, sale_type, total_cash_received, total_sold, characters, occurred_at, created_at")
+    .order("created_at", { ascending: false })
+    .range(from, to);
+
+  if (search) {
+    const maybeId = Number(search);
+    if (Number.isSafeInteger(maybeId)) {
+      query = query.eq("player_id", maybeId);
+    } else {
+      query = applyTextSearch(query, search, ["player_name", "sale_type"]);
+    }
+  }
+  if (type) query = query.eq("sale_type", type);
+  if (status === "bulk") query = query.gte("total_sold", 5);
+  if (status === "high_value") query = query.gte("total_cash_received", 100000);
+
+  const { data, error } = await query;
+  if (error) throw error;
+  const rows = ((data ?? []) as CharacterSaleRow[]).map(normalizeSale);
+  return { rows: rows.slice(0, pageSize), page, pageSize, hasNextPage: rows.length > pageSize };
 }
 
 export async function getPlayerEvents(options?: QueryOptions): Promise<PagedResult<PlayerEventRow>> {
@@ -272,7 +384,7 @@ export async function getSecurityEvents(options?: QueryOptions): Promise<PagedRe
 
 export async function getPlayerInvestigation(playerId: number): Promise<PlayerInvestigation> {
   const supabase = createServerSupabaseClient();
-  const [events, snapshots, purchases, security] = await Promise.all([
+  const [events, snapshots, purchases, gifts, sales, security] = await Promise.all([
     supabase
       .from("player_events")
       .select("id, event_type, player_id, player_name, cash, highest_wave, total_kills, created_at")
@@ -292,6 +404,18 @@ export async function getPlayerInvestigation(playerId: number): Promise<PlayerIn
       .order("created_at", { ascending: false })
       .limit(25),
     supabase
+      .from("gift_logs")
+      .select("id, source_event_id, giver_id, giver_name, receiver_id, receiver_name, character_name, character_id, level, mutation, trait, occurred_at, created_at")
+      .or(`giver_id.eq.${playerId},receiver_id.eq.${playerId}`)
+      .order("created_at", { ascending: false })
+      .limit(25),
+    supabase
+      .from("character_sales")
+      .select("id, source_event_id, player_id, player_name, sale_type, total_cash_received, total_sold, characters, occurred_at, created_at")
+      .eq("player_id", playerId)
+      .order("created_at", { ascending: false })
+      .limit(25),
+    supabase
       .from("security_events")
       .select("id, category, severity, player_id, player_name, created_at")
       .eq("player_id", playerId)
@@ -304,6 +428,8 @@ export async function getPlayerInvestigation(playerId: number): Promise<PlayerIn
     events: (events.data ?? []) as PlayerEventRow[],
     snapshots: (snapshots.data ?? []) as SnapshotRow[],
     purchases: (purchases.data ?? []) as PurchaseRow[],
+    gifts: (gifts.data ?? []) as GiftRow[],
+    sales: ((sales.data ?? []) as CharacterSaleRow[]).map(normalizeSale),
     security: (security.data ?? []) as SecurityRow[],
   };
 }
@@ -361,5 +487,37 @@ export async function getSnapshotDetail(id: number): Promise<SnapshotDetail | nu
     changed_fields: (data.changed_fields ?? {}) as JsonRecord,
     state_hash: data.state_hash,
     profile_version: data.profile_version,
+  };
+}
+
+export async function getGiftDetail(id: number): Promise<(GiftRow & { payload: JsonRecord }) | null> {
+  const supabase = createServerSupabaseClient();
+  const { data, error } = await supabase
+    .from("gift_logs")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!data) return null;
+  return {
+    ...(data as GiftRow),
+    payload: (data.payload ?? {}) as JsonRecord,
+  };
+}
+
+export async function getCharacterSaleDetail(id: number): Promise<(CharacterSaleRow & { payload: JsonRecord }) | null> {
+  const supabase = createServerSupabaseClient();
+  const { data, error } = await supabase
+    .from("character_sales")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!data) return null;
+  return {
+    ...normalizeSale(data as CharacterSaleRow),
+    payload: (data.payload ?? {}) as JsonRecord,
   };
 }

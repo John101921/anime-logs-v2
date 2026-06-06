@@ -748,6 +748,21 @@ tr:last-child td {
   color: var(--muted);
 }
 
+.json-block {
+  max-height: 360px;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 12px;
+  line-height: 1.6;
+  margin: 0;
+  padding: 14px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 .empty {
   padding: 42px 18px;
   color: var(--muted);

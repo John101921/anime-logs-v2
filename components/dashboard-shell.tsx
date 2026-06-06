@@ -1,6 +1,7 @@
 import clsx from "clsx";
 import {
   Activity,
+  ArrowRightLeft,
   Bell,
   CircleDot,
   Coins,
@@ -10,6 +11,7 @@ import {
   Search,
   Settings,
   Shield,
+  ShoppingBag,
   Users,
 } from "lucide-react";
 import Link from "next/link";
@@ -20,6 +22,8 @@ const nav = [
   { href: "/events", label: "Events", icon: Activity },
   { href: "/players", label: "Players", icon: Users },
   { href: "/purchases", label: "Purchases", icon: Coins },
+  { href: "/gifts", label: "Gifts", icon: ArrowRightLeft },
+  { href: "/sales", label: "Sales", icon: ShoppingBag },
   { href: "/snapshots", label: "Snapshots", icon: PackageSearch },
   { href: "/security", label: "Security", icon: Shield },
 ];
@@ -134,14 +138,18 @@ export function SearchForm({
           style={{ paddingLeft: 38 }}
         />
       </div>
-      <select className="input small-input" name="type" defaultValue={type ?? ""}>
-        <option value="">Type: All</option>
-        {typeOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-      </select>
-      <select className="input small-input" name="status" defaultValue={status ?? ""}>
-        <option value="">Status: All</option>
-        {statusOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-      </select>
+      {typeOptions.length > 0 ? (
+        <select className="input small-input" name="type" defaultValue={type ?? ""}>
+          <option value="">Type: All</option>
+          {typeOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+        </select>
+      ) : null}
+      {statusOptions.length > 0 ? (
+        <select className="input small-input" name="status" defaultValue={status ?? ""}>
+          <option value="">Status: All</option>
+          {statusOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+        </select>
+      ) : null}
       <select className="input rows-input" name="pageSize" defaultValue={String(pageSize ?? 10)}>
         <option value="10">10 / page</option>
         <option value="25">25 / page</option>

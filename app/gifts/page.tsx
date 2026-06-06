@@ -1,0 +1,37 @@
+import { CardHeader, DashboardShell, SearchForm } from "@/components/dashboard-shell";
+import { Pagination } from "@/components/pagination";
+import { GiftsTable } from "@/components/tables";
+import { getGifts } from "@/lib/data";
+
+export const dynamic = "force-dynamic";
+
+export default async function GiftsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string; page?: string; pageSize?: string; type?: string; status?: string }>;
+}) {
+  const params = await searchParams;
+  const pageSize = Number(params.pageSize) || 10;
+  const result = await getGifts({ search: params.q, page: Number(params.page) || 1, pageSize, type: params.type });
+
+  return (
+    <DashboardShell title="Gifts" active="Gifts">
+      <section className="table-card">
+        <CardHeader title="Gift Logs">
+          <SearchForm
+            placeholder="Giver, receiver, player ID, character ID..."
+            value={params.q}
+            type={params.type}
+            pageSize={pageSize}
+            typeOptions={[
+              { label: "Mutated character", value: "mutated" },
+              { label: "Trait character", value: "traited" },
+            ]}
+          />
+        </CardHeader>
+        <GiftsTable rows={result.rows} />
+        <Pagination pathname="/gifts" page={result.page} hasNextPage={result.hasNextPage} query={params.q} type={params.type} pageSize={pageSize} />
+      </section>
+    </DashboardShell>
+  );
+}

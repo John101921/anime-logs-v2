@@ -1,6 +1,6 @@
 import { DashboardShell } from "@/components/dashboard-shell";
 import { PlayerJump } from "@/components/player-jump";
-import { PlayerEventsTable, PurchasesTable, SecurityTable, SnapshotTable } from "@/components/tables";
+import { CharacterSalesTable, GiftsTable, PlayerEventsTable, PurchasesTable, SecurityTable, SnapshotTable } from "@/components/tables";
 import { getPlayerInvestigation } from "@/lib/data";
 import { formatNumber } from "@/lib/format";
 import Link from "next/link";
@@ -15,8 +15,9 @@ export default async function PlayerInvestigationPage({ params }: { params: Prom
 
   const data = await getPlayerInvestigation(id);
   const latestSnapshot = data.snapshots[0];
-  const latestName = latestSnapshot?.player_name ?? data.events[0]?.player_name ?? data.purchases[0]?.player_name ?? `#${id}`;
+  const latestName = latestSnapshot?.player_name ?? data.events[0]?.player_name ?? data.purchases[0]?.player_name ?? data.sales[0]?.player_name ?? `#${id}`;
   const totalRobux = data.purchases.reduce((sum, purchase) => sum + purchase.robux_spent, 0);
+  const totalSaleCash = data.sales.reduce((sum, sale) => sum + sale.total_cash_received, 0);
 
   return (
     <DashboardShell title="Player Investigation" active="Players">
@@ -34,6 +35,9 @@ export default async function PlayerInvestigationPage({ params }: { params: Prom
         <div className="stat-card"><div className="stat-label">Snapshots</div><div className="stat-value">{formatNumber(data.snapshots.length)}</div></div>
         <div className="stat-card"><div className="stat-label">Purchases</div><div className="stat-value">{formatNumber(data.purchases.length)}</div></div>
         <div className="stat-card"><div className="stat-label">Robux recorded</div><div className="stat-value">{formatNumber(totalRobux)}</div></div>
+        <div className="stat-card"><div className="stat-label">Gifts involved</div><div className="stat-value">{formatNumber(data.gifts.length)}</div></div>
+        <div className="stat-card"><div className="stat-label">Sales</div><div className="stat-value">{formatNumber(data.sales.length)}</div></div>
+        <div className="stat-card"><div className="stat-label">Sale cash</div><div className="stat-value">{formatNumber(totalSaleCash)}</div></div>
       </section>
 
       {latestSnapshot ? (
@@ -58,6 +62,17 @@ export default async function PlayerInvestigationPage({ params }: { params: Prom
         <div className="card-header"><h2 className="card-title">Snapshot Evidence</h2></div>
         <SnapshotTable rows={data.snapshots} />
       </section>
+
+      <div className="split-grid">
+        <section className="table-card">
+          <div className="card-header"><h2 className="card-title">Character Sales</h2></div>
+          <CharacterSalesTable rows={data.sales} />
+        </section>
+        <section className="table-card">
+          <div className="card-header"><h2 className="card-title">Gifts Involving Player</h2></div>
+          <GiftsTable rows={data.gifts} />
+        </section>
+      </div>
 
       <div className="split-grid">
         <section className="table-card">
