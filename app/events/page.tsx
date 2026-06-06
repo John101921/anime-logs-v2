@@ -8,18 +8,29 @@ export const dynamic = "force-dynamic";
 export default async function EventsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; page?: string }>;
+  searchParams: Promise<{ q?: string; page?: string; pageSize?: string; type?: string; status?: string }>;
 }) {
   const params = await searchParams;
-  const result = await getPlayerEvents({ search: params.q, page: Number(params.page) || 1 });
+  const pageSize = Number(params.pageSize) || 10;
+  const result = await getPlayerEvents({ search: params.q, page: Number(params.page) || 1, pageSize, type: params.type, status: params.status });
   return (
     <DashboardShell title="Events" active="Events">
       <section className="table-card">
         <CardHeader title="Player Events">
-          <SearchForm placeholder="Player name or ID..." value={params.q} />
+          <SearchForm
+            placeholder="Player name or ID..."
+            value={params.q}
+            type={params.type}
+            status={params.status}
+            pageSize={pageSize}
+            typeOptions={[
+              { label: "Join", value: "join" },
+              { label: "Leave", value: "leave" },
+            ]}
+          />
         </CardHeader>
         <PlayerEventsTable rows={result.rows} />
-        <Pagination pathname="/events" page={result.page} hasNextPage={result.hasNextPage} query={params.q} />
+        <Pagination pathname="/events" page={result.page} hasNextPage={result.hasNextPage} query={params.q} type={params.type} status={params.status} pageSize={pageSize} />
       </section>
     </DashboardShell>
   );

@@ -106,9 +106,19 @@ export function CardHeader({
 export function SearchForm({
   placeholder,
   value,
+  type,
+  status,
+  pageSize,
+  typeOptions = [],
+  statusOptions = [],
 }: {
   placeholder: string;
   value?: string;
+  type?: string;
+  status?: string;
+  pageSize?: number;
+  typeOptions?: Array<{ label: string; value: string }>;
+  statusOptions?: Array<{ label: string; value: string }>;
 }) {
   return (
     <form className="filters">
@@ -122,11 +132,19 @@ export function SearchForm({
           style={{ paddingLeft: 38 }}
         />
       </div>
-      <select className="input small-input" name="status" defaultValue="">
-        <option value="">Status: All</option>
-      </select>
-      <select className="input small-input" name="type" defaultValue="">
+      <select className="input small-input" name="type" defaultValue={type ?? ""}>
         <option value="">Type: All</option>
+        {typeOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+      </select>
+      <select className="input small-input" name="status" defaultValue={status ?? ""}>
+        <option value="">Status: All</option>
+        {statusOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+      </select>
+      <select className="input rows-input" name="pageSize" defaultValue={String(pageSize ?? 10)}>
+        <option value="10">10 / page</option>
+        <option value="25">25 / page</option>
+        <option value="50">50 / page</option>
+        <option value="100">100 / page</option>
       </select>
       <button className="button" type="submit">Search</button>
     </form>

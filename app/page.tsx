@@ -2,21 +2,34 @@ import { CardHeader, DashboardShell } from "@/components/dashboard-shell";
 import { StatCard } from "@/components/stat-card";
 import { PlayerEventsTable, PurchasesTable, SecurityTable, SnapshotTable } from "@/components/tables";
 import { getOverviewData } from "@/lib/data";
-import { formatNumber } from "@/lib/format";
+import { formatDate, formatNumber } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   const data = await getOverviewData();
   const totalRobux = data.purchases.reduce((sum, row) => sum + Number(row.robux_spent ?? 0), 0);
+  const health = data.health;
+  const lastIngested = health?.last_ingested_at ? formatDate(health.last_ingested_at) : "No data";
 
   return (
     <DashboardShell title="Dashboard" active="Home">
       <section className="stats-grid">
-        <StatCard label="Recent events" value={formatNumber(data.events.length)} />
-        <StatCard label="Recent snapshots" value={formatNumber(data.snapshots.length)} />
-        <StatCard label="Recent purchases" value={formatNumber(data.purchases.length)} />
+        <StatCard label="Player events / hour" value={formatNumber(health?.player_events_last_hour ?? 0)} />
+        <StatCard label="Snapshots / hour" value={formatNumber(health?.snapshots_last_hour ?? 0)} />
+        <StatCard label="Purchases / hour" value={formatNumber(health?.purchases_last_hour ?? 0)} />
         <StatCard label="Recent Robux" value={formatNumber(totalRobux)} />
+      </section>
+
+      <section className="table-card" style={{ marginBottom: 20 }}>
+        <div className="card-header">
+          <div>
+            <h2 className="card-title">Ingest Health</h2>
+            <p className="muted" style={{ margin: "6px 0 0" }}>
+              Last database write: {lastIngested}. Security events last hour: {formatNumber(health?.security_events_last_hour ?? 0)}.
+            </p>
+          </div>
+        </div>
       </section>
 
       <section className="table-card" style={{ marginBottom: 20 }}>

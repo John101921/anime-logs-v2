@@ -8,18 +8,28 @@ export const dynamic = "force-dynamic";
 export default async function PurchasesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; page?: string }>;
+  searchParams: Promise<{ q?: string; page?: string; pageSize?: string; type?: string; status?: string }>;
 }) {
   const params = await searchParams;
-  const result = await getPurchases({ search: params.q, page: Number(params.page) || 1 });
+  const pageSize = Number(params.pageSize) || 10;
+  const result = await getPurchases({ search: params.q, page: Number(params.page) || 1, pageSize, type: params.type, status: params.status });
   return (
     <DashboardShell title="Purchases" active="Purchases">
       <section className="table-card">
         <CardHeader title="Product Purchases">
-          <SearchForm placeholder="Player, product, purchase ID..." value={params.q} />
+          <SearchForm
+            placeholder="Player, product, purchase ID..."
+            value={params.q}
+            status={params.status}
+            pageSize={pageSize}
+            statusOptions={[
+              { label: "Verified", value: "verified" },
+              { label: "Missing purchase ID", value: "missing_purchase_id" },
+            ]}
+          />
         </CardHeader>
         <PurchasesTable rows={result.rows} />
-        <Pagination pathname="/purchases" page={result.page} hasNextPage={result.hasNextPage} query={params.q} />
+        <Pagination pathname="/purchases" page={result.page} hasNextPage={result.hasNextPage} query={params.q} status={params.status} pageSize={pageSize} />
       </section>
     </DashboardShell>
   );

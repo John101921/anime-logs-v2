@@ -85,6 +85,8 @@ export type QueryOptions = {
   page?: number;
   pageSize?: number;
   search?: string;
+  type?: string;
+  status?: string;
 };
 
 export type PagedResult<T> = {
@@ -94,7 +96,7 @@ export type PagedResult<T> = {
   hasNextPage: boolean;
 };
 
-const DEFAULT_PAGE_SIZE = 50;
+const DEFAULT_PAGE_SIZE = 10;
 const MAX_PAGE_SIZE = 100;
 
 function normalizeQueryOptions(options: QueryOptions = {}) {
@@ -102,6 +104,8 @@ function normalizeQueryOptions(options: QueryOptions = {}) {
     page: Math.max(1, Number(options.page) || 1),
     pageSize: Math.min(MAX_PAGE_SIZE, Math.max(1, Number(options.pageSize) || DEFAULT_PAGE_SIZE)),
     search: (options.search ?? "").trim(),
+    type: (options.type ?? "").trim(),
+    status: (options.status ?? "").trim(),
   };
 }
 
@@ -123,11 +127,12 @@ function applyTextSearch<T>(query: T, search: string, columns: string[]): T {
 export async function getOverviewData() {
   const supabase = createServerSupabaseClient();
 
-  const [events, snapshots, purchases, security] = await Promise.all([
+  const [events, snapshots, purchases, security, health] = await Promise.all([
     supabase.from("player_events").select("id, event_type, player_id, player_name, cash, highest_wave, total_kills, created_at").order("created_at", { ascending: false }).limit(12),
     supabase.from("player_snapshots").select("id, snapshot_kind, player_id, player_name, cash, highest_wave, total_kills, created_at").order("created_at", { ascending: false }).limit(8),
     supabase.from("product_purchases").select("id, player_id, player_name, product_name, robux_spent, purchase_id, created_at").order("created_at", { ascending: false }).limit(8),
     supabase.from("security_events").select("id, category, severity, player_id, player_name, created_at").order("created_at", { ascending: false }).limit(8),
+    supabase.from("ingest_health_summary").select("*").maybeSingle(),
   ]);
 
   return {
@@ -135,12 +140,19 @@ export async function getOverviewData() {
     snapshots: (snapshots.data ?? []) as SnapshotRow[],
     purchases: (purchases.data ?? []) as PurchaseRow[],
     security: (security.data ?? []) as SecurityRow[],
+    health: health.data as {
+      player_events_last_hour: number;
+      snapshots_last_hour: number;
+      purchases_last_hour: number;
+      security_events_last_hour: number;
+      last_ingested_at: string | null;
+    } | null,
   };
 }
 
 export async function getPlayerEvents(options?: QueryOptions): Promise<PagedResult<PlayerEventRow>> {
   const supabase = createServerSupabaseClient();
-  const { page, pageSize, search } = normalizeQueryOptions(options);
+  const { page, pageSize, search, type } = normalizeQueryOptions(options);
   const from = (page - 1) * pageSize;
   const to = from + pageSize;
   let query = supabase
@@ -150,6 +162,7 @@ export async function getPlayerEvents(options?: QueryOptions): Promise<PagedResu
     .range(from, to);
 
   query = applyPlayerSearch(query, search);
+  if (type) query = query.eq("event_type", type);
   const { data, error } = await query;
   if (error) throw error;
   const rows = (data ?? []) as PlayerEventRow[];
@@ -158,7 +171,7 @@ export async function getPlayerEvents(options?: QueryOptions): Promise<PagedResu
 
 export async function getSnapshots(options?: QueryOptions): Promise<PagedResult<SnapshotRow>> {
   const supabase = createServerSupabaseClient();
-  const { page, pageSize, search } = normalizeQueryOptions(options);
+  const { page, pageSize, search, type } = normalizeQueryOptions(options);
   const from = (page - 1) * pageSize;
   const to = from + pageSize;
   let query = supabase
@@ -168,6 +181,7 @@ export async function getSnapshots(options?: QueryOptions): Promise<PagedResult<
     .range(from, to);
 
   query = applyPlayerSearch(query, search);
+  if (type) query = query.eq("snapshot_kind", type);
   const { data, error } = await query;
   if (error) throw error;
   const rows = (data ?? []) as SnapshotRow[];
@@ -176,7 +190,7 @@ export async function getSnapshots(options?: QueryOptions): Promise<PagedResult<
 
 export async function getLatestPlayers(options?: QueryOptions): Promise<PagedResult<SnapshotRow>> {
   const supabase = createServerSupabaseClient();
-  const { page, pageSize, search } = normalizeQueryOptions(options);
+  const { page, pageSize, search, type } = normalizeQueryOptions(options);
   const from = (page - 1) * pageSize;
   const to = from + pageSize;
   let query = supabase
@@ -186,6 +200,7 @@ export async function getLatestPlayers(options?: QueryOptions): Promise<PagedRes
     .range(from, to);
 
   query = applyPlayerSearch(query, search);
+  if (type) query = query.eq("snapshot_kind", type);
   const { data, error } = await query;
   if (error) throw error;
   const rows = (data ?? []) as SnapshotRow[];
@@ -194,7 +209,7 @@ export async function getLatestPlayers(options?: QueryOptions): Promise<PagedRes
 
 export async function getPurchases(options?: QueryOptions): Promise<PagedResult<PurchaseRow>> {
   const supabase = createServerSupabaseClient();
-  const { page, pageSize, search } = normalizeQueryOptions(options);
+  const { page, pageSize, search, status } = normalizeQueryOptions(options);
   const from = (page - 1) * pageSize;
   const to = from + pageSize;
   let query = supabase
@@ -211,6 +226,8 @@ export async function getPurchases(options?: QueryOptions): Promise<PagedResult<
       query = applyTextSearch(query, search, ["player_name", "product_name", "purchase_id"]);
     }
   }
+  if (status === "verified") query = query.not("purchase_id", "is", null);
+  if (status === "missing_purchase_id") query = query.is("purchase_id", null);
 
   const { data, error } = await query;
   if (error) throw error;
@@ -220,7 +237,7 @@ export async function getPurchases(options?: QueryOptions): Promise<PagedResult<
 
 export async function getSecurityEvents(options?: QueryOptions): Promise<PagedResult<SecurityRow>> {
   const supabase = createServerSupabaseClient();
-  const { page, pageSize, search } = normalizeQueryOptions(options);
+  const { page, pageSize, search, type } = normalizeQueryOptions(options);
   const from = (page - 1) * pageSize;
   const to = from + pageSize;
   let query = supabase
@@ -237,6 +254,7 @@ export async function getSecurityEvents(options?: QueryOptions): Promise<PagedRe
       query = applyTextSearch(query, search, ["player_name", "category", "severity"]);
     }
   }
+  if (type) query = query.eq("severity", type);
 
   const { data, error } = await query;
   if (error) throw error;

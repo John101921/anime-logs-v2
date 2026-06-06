@@ -2,142 +2,165 @@ import { formatDate, formatNumber } from "@/lib/format";
 import type { InventoryEntry, ItemEntry, PlayerEventDetail, SnapshotDetail } from "@/lib/data";
 
 function describeCharacter(entry: InventoryEntry) {
-  const parts = [
+  return [
     entry.character_name ?? "Unknown",
-    entry.character_id ? `ID: ${entry.character_id}` : null,
-    entry.level != null ? `Level ${entry.level}` : null,
-    `Mutation: ${entry.mutation ?? "Normal"}`,
-    `Trait: ${entry.trait ?? "None"}`,
-  ].filter(Boolean);
-  return parts.join(" | ");
+    entry.character_id ? `ID ${entry.character_id}` : null,
+    entry.level != null ? `Lv ${entry.level}` : null,
+    `Mutation ${entry.mutation ?? "Normal"}`,
+    `Trait ${entry.trait ?? "None"}`,
+  ].filter(Boolean).join(" | ");
 }
 
-function InventoryList({ rows }: { rows: InventoryEntry[] }) {
-  if (rows.length === 0) return <p className="detail-empty">None recorded</p>;
+function EvidenceList<T>({
+  rows,
+  render,
+}: {
+  rows: T[];
+  render: (row: T, index: number) => string;
+}) {
+  if (rows.length === 0) return <div className="evidence-empty">No data recorded for this section.</div>;
   return (
-    <ul className="detail-list">
-      {rows.map((entry, index) => <li key={`${entry.character_id ?? index}-${index}`}>{describeCharacter(entry)}</li>)}
-    </ul>
+    <div className="evidence-list">
+      {rows.map((row, index) => <div className="evidence-row" key={index}>{render(row, index)}</div>)}
+    </div>
   );
 }
 
-function ItemList({ rows }: { rows: ItemEntry[] }) {
-  if (rows.length === 0) return <p className="detail-empty">None recorded</p>;
+function Stat({ label, value }: { label: string; value: string | number }) {
   return (
-    <ul className="detail-list">
-      {rows.map((entry, index) => (
-        <li key={`${entry.item_name ?? index}-${index}`}>
-          {entry.item_name ?? "Unknown Item"} x{formatNumber(entry.quantity ?? 0)}
-        </li>
-      ))}
-    </ul>
+    <div className="detail-stat">
+      <span>{label}</span>
+      <strong>{value}</strong>
+    </div>
   );
 }
 
-function DetailSection({ icon, title, children }: { icon: string; title: string; children: React.ReactNode }) {
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="detail-section">
-      <h3>{icon} {title}</h3>
+    <section className="evidence-section">
+      <h3>{title}</h3>
       {children}
     </section>
   );
 }
 
-export function PlayerEventDetailCard({ event }: { event: PlayerEventDetail }) {
-  const isJoin = event.event_type === "join";
-  const title = isJoin ? "🟢 Join" : "🔴 Leave";
+function DetailShell({
+  title,
+  subtitle,
+  badge,
+  player,
+  playerId,
+  time,
+  eventId,
+  stats,
+  children,
+}: {
+  title: string;
+  subtitle: string;
+  badge: string;
+  player: string;
+  playerId: number;
+  time: string;
+  eventId: string;
+  stats: Array<{ label: string; value: string | number }>;
+  children: React.ReactNode;
+}) {
   return (
-    <article className="log-detail-card">
-      <div className="detail-top">
+    <article className="evidence-card">
+      <header className="evidence-header">
         <div>
-          <div className="detail-title">🦁 {title}</div>
-          <div className="detail-id">Event ID: {event.source_event_id}</div>
+          <span className="badge">{badge}</span>
+          <h2>{title}</h2>
+          <p>{subtitle}</p>
         </div>
-        <div className="detail-mascot">🦌</div>
+        <div className="evidence-player">
+          <strong>{player}</strong>
+          <span>#{playerId}</span>
+        </div>
+      </header>
+
+      <div className="evidence-meta">
+        <div>
+          <span>Recorded at</span>
+          <strong>{time}</strong>
+        </div>
+        <div>
+          <span>Source event ID</span>
+          <strong>{eventId}</strong>
+        </div>
       </div>
 
-      <DetailSection icon="👤" title="Player">
-        <p>{event.player_name} ({event.player_id})</p>
-      </DetailSection>
+      <div className="detail-stats">
+        {stats.map((stat) => <Stat key={stat.label} label={stat.label} value={stat.value} />)}
+      </div>
 
-      <DetailSection icon="🕘" title={isJoin ? "Join Time" : "Leave Time"}>
-        <p>{formatDate(isJoin ? event.joined_at ?? event.occurred_at : event.left_at ?? event.occurred_at)}</p>
-        {event.session_duration_seconds != null ? <p className="detail-empty">Session: {formatNumber(event.session_duration_seconds)}s</p> : null}
-      </DetailSection>
-
-      <DetailSection icon="💰" title="Cash">
-        <p>{formatNumber(event.cash)}</p>
-      </DetailSection>
-
-      <DetailSection icon="📦" title="Inventory">
-        <InventoryList rows={event.inventory} />
-      </DetailSection>
-
-      <DetailSection icon="🎒" title="Items">
-        <ItemList rows={event.items} />
-      </DetailSection>
-
-      <DetailSection icon="⚔️" title="Equipped">
-        <InventoryList rows={event.equipped} />
-      </DetailSection>
-
-      <DetailSection icon="🌊" title="Highest Wave">
-        <p>{formatNumber(event.highest_wave)}</p>
-      </DetailSection>
-
-      <DetailSection icon="🔫" title="Total Kills">
-        <p>{formatNumber(event.total_kills)}</p>
-      </DetailSection>
-
-      <DetailSection icon="🦁" title="FooterText">
-        <p className="detail-empty">Recorded by Anime Logs v2</p>
-      </DetailSection>
+      {children}
     </article>
+  );
+}
+
+export function PlayerEventDetailCard({ event }: { event: PlayerEventDetail }) {
+  const isJoin = event.event_type === "join";
+  const recordedAt = isJoin ? event.joined_at ?? event.occurred_at : event.left_at ?? event.occurred_at;
+  return (
+    <DetailShell
+      title={`${isJoin ? "Join" : "Leave"} Log`}
+      subtitle="Player lifecycle evidence for recovery and audit checks."
+      badge={event.event_type}
+      player={event.player_name}
+      playerId={event.player_id}
+      time={formatDate(recordedAt)}
+      eventId={event.source_event_id}
+      stats={[
+        { label: "Cash", value: formatNumber(event.cash) },
+        { label: "Highest Wave", value: formatNumber(event.highest_wave) },
+        { label: "Total Kills", value: formatNumber(event.total_kills) },
+        { label: "Session", value: event.session_duration_seconds != null ? `${formatNumber(event.session_duration_seconds)}s` : "N/A" },
+      ]}
+    >
+      <div className="evidence-grid">
+        <Section title="Inventory">
+          <EvidenceList rows={event.inventory} render={(entry) => describeCharacter(entry)} />
+        </Section>
+        <Section title="Items">
+          <EvidenceList rows={event.items} render={(entry: ItemEntry) => `${entry.item_name ?? "Unknown Item"} x${formatNumber(entry.quantity ?? 0)}`} />
+        </Section>
+        <Section title="Equipped">
+          <EvidenceList rows={event.equipped} render={(entry) => describeCharacter(entry)} />
+        </Section>
+      </div>
+    </DetailShell>
   );
 }
 
 export function SnapshotDetailCard({ snapshot }: { snapshot: SnapshotDetail }) {
   return (
-    <article className="log-detail-card">
-      <div className="detail-top">
-        <div>
-          <div className="detail-title">📸 Snapshot: {snapshot.snapshot_kind}</div>
-          <div className="detail-id">Event ID: {snapshot.source_event_id}</div>
-        </div>
-        <div className="detail-mascot">🦌</div>
+    <DetailShell
+      title={`${snapshot.snapshot_kind} Snapshot`}
+      subtitle="Stored player-state evidence captured by the logging pipeline."
+      badge={snapshot.snapshot_kind}
+      player={snapshot.player_name}
+      playerId={snapshot.player_id}
+      time={formatDate(snapshot.occurred_at)}
+      eventId={snapshot.source_event_id}
+      stats={[
+        { label: "Cash", value: formatNumber(snapshot.cash) },
+        { label: "Highest Wave", value: formatNumber(snapshot.highest_wave) },
+        { label: "Total Kills", value: formatNumber(snapshot.total_kills) },
+        { label: "Profile Version", value: snapshot.profile_version ?? "N/A" },
+      ]}
+    >
+      <div className="evidence-grid">
+        <Section title="Inventory">
+          <EvidenceList rows={snapshot.inventory} render={(entry) => describeCharacter(entry)} />
+        </Section>
+        <Section title="Items">
+          <EvidenceList rows={snapshot.items} render={(entry: ItemEntry) => `${entry.item_name ?? "Unknown Item"} x${formatNumber(entry.quantity ?? 0)}`} />
+        </Section>
+        <Section title="Equipped">
+          <EvidenceList rows={snapshot.equipped} render={(entry) => describeCharacter(entry)} />
+        </Section>
       </div>
-
-      <DetailSection icon="👤" title="Player">
-        <p>{snapshot.player_name} ({snapshot.player_id})</p>
-      </DetailSection>
-
-      <DetailSection icon="🕘" title="Snapshot Time">
-        <p>{formatDate(snapshot.occurred_at)}</p>
-      </DetailSection>
-
-      <DetailSection icon="💰" title="Cash">
-        <p>{formatNumber(snapshot.cash)}</p>
-      </DetailSection>
-
-      <DetailSection icon="📦" title="Inventory">
-        <InventoryList rows={snapshot.inventory} />
-      </DetailSection>
-
-      <DetailSection icon="🎒" title="Items">
-        <ItemList rows={snapshot.items} />
-      </DetailSection>
-
-      <DetailSection icon="⚔️" title="Equipped">
-        <InventoryList rows={snapshot.equipped} />
-      </DetailSection>
-
-      <DetailSection icon="🌊" title="Highest Wave">
-        <p>{formatNumber(snapshot.highest_wave)}</p>
-      </DetailSection>
-
-      <DetailSection icon="🔫" title="Total Kills">
-        <p>{formatNumber(snapshot.total_kills)}</p>
-      </DetailSection>
-    </article>
+    </DetailShell>
   );
 }
