@@ -27,7 +27,7 @@ export function PlayerEventsTable({ rows }: { rows: PlayerEventRow[] }) {
               <td data-label="Cash">{formatNumber(row.cash)}</td>
               <td data-label="Wave">{formatNumber(row.highest_wave)}</td>
               <td data-label="Kills">{formatNumber(row.total_kills)}</td>
-              <td data-label="Date">{formatDate(row.created_at)}</td>
+              <td data-label="Date">{formatDate(row.occurred_at ?? row.created_at)}</td>
               <td data-label="Status"><span className="status-pill"><span className="status-dot" /> Recorded</span></td>
               <td data-label="Actions"><Link className="view-button" href={`/events/${row.id}`}>View</Link></td>
             </tr>
@@ -63,7 +63,7 @@ export function SnapshotTable({ rows }: { rows: SnapshotRow[] }) {
               <td data-label="Cash">{formatNumber(row.cash)}</td>
               <td data-label="Wave">{formatNumber(row.highest_wave)}</td>
               <td data-label="Kills">{formatNumber(row.total_kills)}</td>
-              <td data-label="Date">{formatDate(row.created_at)}</td>
+              <td data-label="Date">{formatDate(row.occurred_at ?? row.created_at)}</td>
               <td data-label="Status"><span className="status-pill"><span className="status-dot" /> Stored</span></td>
               <td data-label="Actions"><Link className="view-button" href={`/snapshots/${row.id}`}>View</Link></td>
             </tr>
@@ -97,7 +97,7 @@ export function PurchasesTable({ rows }: { rows: PurchaseRow[] }) {
               <td data-label="Player"><Link className="row-link" href={`/players/${row.player_id}`}>{row.player_name}</Link> <span className="muted">#{row.player_id}</span></td>
               <td data-label="Robux">{formatNumber(row.robux_spent)}</td>
               <td data-label="Purchase ID" className="muted">{row.purchase_id ?? "N/A"}</td>
-              <td data-label="Date">{formatDate(row.created_at)}</td>
+              <td data-label="Date">{formatDate(row.occurred_at ?? row.created_at)}</td>
               <td data-label="Status"><span className="status-pill"><span className="status-dot" /> Verified</span></td>
               <td data-label="Actions"><span className="view-button disabled">View</span></td>
             </tr>
@@ -135,7 +135,7 @@ export function GiftsTable({ rows }: { rows: GiftRow[] }) {
               <td data-label="Receiver"><Link className="row-link" href={`/players/${row.receiver_id}`}>{row.receiver_name}</Link> <span className="muted">#{row.receiver_id}</span></td>
               <td data-label="Level">{formatNumber(row.level)}</td>
               <td data-label="Mutation / Trait"><span className="badge">{row.mutation ?? "Normal"}</span> <span className="muted">{row.trait ?? "None"}</span></td>
-              <td data-label="Date">{formatDate(row.created_at)}</td>
+              <td data-label="Date">{formatDate(row.occurred_at ?? row.created_at)}</td>
               <td data-label="Actions"><Link className="view-button" href={`/gifts/${row.id}`}>View</Link></td>
             </tr>
           ))}
@@ -176,7 +176,7 @@ export function CharacterSalesTable({ rows }: { rows: CharacterSaleRow[] }) {
                   {characterName}
                   {extraCount > 0 ? <span className="muted"> +{extraCount} more</span> : null}
                 </td>
-                <td data-label="Date">{formatDate(row.created_at)}</td>
+                <td data-label="Date">{formatDate(row.occurred_at ?? row.created_at)}</td>
                 <td data-label="Actions"><Link className="view-button" href={`/sales/${row.id}`}>View</Link></td>
               </tr>
             );
@@ -208,7 +208,7 @@ export function SecurityTable({ rows }: { rows: SecurityRow[] }) {
               <td data-label="Category">{row.category}</td>
               <td data-label="Severity"><span className={row.severity === "critical" || row.severity === "high" ? "badge danger" : "badge"}>{row.severity}</span></td>
               <td data-label="Player">{row.player_name ?? "N/A"} {row.player_id ? <span className="muted">#{row.player_id}</span> : null}</td>
-              <td data-label="Date">{formatDate(row.created_at)}</td>
+              <td data-label="Date">{formatDate(row.occurred_at ?? row.created_at)}</td>
               <td data-label="Status"><span className="status-pill"><span className={row.severity === "critical" ? "status-dot inactive" : "status-dot"} /> Logged</span></td>
               <td data-label="Actions"><span className="view-button disabled">View</span></td>
             </tr>

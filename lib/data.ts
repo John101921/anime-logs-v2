@@ -8,6 +8,7 @@ export type PlayerEventRow = {
   cash: number;
   highest_wave: number;
   total_kills: number;
+  occurred_at?: string;
   created_at: string;
 };
 
@@ -47,6 +48,7 @@ export type SnapshotRow = {
   cash: number;
   highest_wave: number;
   total_kills: number;
+  occurred_at?: string;
   created_at: string;
 };
 
@@ -69,6 +71,7 @@ export type PurchaseRow = {
   product_name: string;
   robux_spent: number;
   purchase_id: string | null;
+  occurred_at?: string;
   created_at: string;
 };
 
@@ -118,6 +121,7 @@ export type SecurityRow = {
   severity: string;
   player_id: number | null;
   player_name: string | null;
+  occurred_at?: string;
   created_at: string;
 };
 
@@ -204,12 +208,12 @@ export async function getOverviewData() {
   const supabase = createServerSupabaseClient();
 
   const [events, snapshots, purchases, gifts, sales, security, health] = await Promise.all([
-    supabase.from("player_events").select("id, event_type, player_id, player_name, cash, highest_wave, total_kills, created_at").order("created_at", { ascending: false }).limit(12),
-    supabase.from("player_snapshots").select("id, snapshot_kind, player_id, player_name, cash, highest_wave, total_kills, created_at").order("created_at", { ascending: false }).limit(8),
-    supabase.from("product_purchases").select("id, player_id, player_name, product_name, robux_spent, purchase_id, created_at").order("created_at", { ascending: false }).limit(8),
-    supabase.from("gift_logs").select("id, source_event_id, giver_id, giver_name, receiver_id, receiver_name, character_name, character_id, level, mutation, trait, occurred_at, created_at").order("created_at", { ascending: false }).limit(8),
-    supabase.from("character_sales").select("id, source_event_id, player_id, player_name, sale_type, total_cash_received, total_sold, characters, occurred_at, created_at").order("created_at", { ascending: false }).limit(8),
-    supabase.from("security_events").select("id, category, severity, player_id, player_name, created_at").order("created_at", { ascending: false }).limit(8),
+    supabase.from("player_events").select("id, event_type, player_id, player_name, cash, highest_wave, total_kills, occurred_at, created_at").order("occurred_at", { ascending: false }).limit(12),
+    supabase.from("player_snapshots").select("id, snapshot_kind, player_id, player_name, cash, highest_wave, total_kills, occurred_at, created_at").order("id", { ascending: false }).limit(8),
+    supabase.from("product_purchases").select("id, player_id, player_name, product_name, robux_spent, purchase_id, occurred_at, created_at").order("occurred_at", { ascending: false }).limit(8),
+    supabase.from("gift_logs").select("id, source_event_id, giver_id, giver_name, receiver_id, receiver_name, character_name, character_id, level, mutation, trait, occurred_at, created_at").order("occurred_at", { ascending: false }).limit(8),
+    supabase.from("character_sales").select("id, source_event_id, player_id, player_name, sale_type, total_cash_received, total_sold, characters, occurred_at, created_at").order("occurred_at", { ascending: false }).limit(8),
+    supabase.from("security_events").select("id, category, severity, player_id, player_name, occurred_at, created_at").order("occurred_at", { ascending: false }).limit(8),
     supabase.from("ingest_health_summary").select("*").maybeSingle(),
   ]);
 
@@ -240,7 +244,7 @@ export async function getGifts(options?: QueryOptions): Promise<PagedResult<Gift
   let query = supabase
     .from("gift_logs")
     .select("id, source_event_id, giver_id, giver_name, receiver_id, receiver_name, character_name, character_id, level, mutation, trait, occurred_at, created_at")
-    .order("id", { ascending: false })
+    .order("occurred_at", { ascending: false })
     .range(from, to);
 
   if (search) {
@@ -267,7 +271,7 @@ export async function getCharacterSales(options?: QueryOptions): Promise<PagedRe
   let query = supabase
     .from("character_sales")
     .select("id, source_event_id, player_id, player_name, sale_type, total_cash_received, total_sold, characters, occurred_at, created_at")
-    .order("id", { ascending: false })
+    .order("occurred_at", { ascending: false })
     .range(from, to);
 
   if (search) {
@@ -294,8 +298,8 @@ export async function getPlayerEvents(options?: QueryOptions): Promise<PagedResu
   const to = from + pageSize;
   let query = supabase
     .from("player_events")
-    .select("id, event_type, player_id, player_name, cash, highest_wave, total_kills, created_at")
-    .order("id", { ascending: false })
+    .select("id, event_type, player_id, player_name, cash, highest_wave, total_kills, occurred_at, created_at")
+    .order("occurred_at", { ascending: false })
     .range(from, to);
 
   query = applyPlayerSearch(query, search);
@@ -312,7 +316,7 @@ export async function getSnapshots(options?: QueryOptions): Promise<PagedResult<
   const to = from + pageSize;
   let query = supabase
     .from("player_snapshots")
-    .select("id, snapshot_kind, player_id, player_name, cash, highest_wave, total_kills, created_at")
+    .select("id, snapshot_kind, player_id, player_name, cash, highest_wave, total_kills, occurred_at, created_at")
     .order("id", { ascending: false })
     .range(from, to);
 
@@ -361,7 +365,7 @@ async function getLatestPlayersFromSnapshots(options?: QueryOptions): Promise<Pa
   const scanLimit = Math.min(1000, Math.max(pageSize + 1, page * pageSize * 30));
   let query = supabase
     .from("player_snapshots")
-    .select("id, snapshot_kind, player_id, player_name, cash, highest_wave, total_kills, created_at")
+    .select("id, snapshot_kind, player_id, player_name, cash, highest_wave, total_kills, occurred_at, created_at")
     .order("id", { ascending: false })
     .range(0, scanLimit - 1);
 
@@ -392,8 +396,8 @@ export async function getPurchases(options?: QueryOptions): Promise<PagedResult<
   const to = from + pageSize;
   let query = supabase
     .from("product_purchases")
-    .select("id, player_id, player_name, product_name, robux_spent, purchase_id, created_at")
-    .order("id", { ascending: false })
+    .select("id, player_id, player_name, product_name, robux_spent, purchase_id, occurred_at, created_at")
+    .order("occurred_at", { ascending: false })
     .range(from, to);
 
   if (search) {
@@ -419,8 +423,8 @@ export async function getSecurityEvents(options?: QueryOptions): Promise<PagedRe
   const to = from + pageSize;
   let query = supabase
     .from("security_events")
-    .select("id, category, severity, player_id, player_name, created_at")
-    .order("id", { ascending: false })
+    .select("id, category, severity, player_id, player_name, occurred_at, created_at")
+    .order("occurred_at", { ascending: false })
     .range(from, to);
 
   if (search) {
