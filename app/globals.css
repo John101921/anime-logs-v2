@@ -819,6 +819,27 @@ tr:last-child td {
   gap: 8px;
 }
 
+.evidence-list.scrollable {
+  max-height: 420px;
+  overflow-y: auto;
+  padding-right: 8px;
+  scrollbar-color: var(--line) transparent;
+  scrollbar-width: thin;
+}
+
+.evidence-list.scrollable::-webkit-scrollbar {
+  width: 8px;
+}
+
+.evidence-list.scrollable::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.evidence-list.scrollable::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 999px;
+}
+
 .evidence-row {
   border-bottom: 1px solid var(--line);
   color: var(--text);
@@ -1145,5 +1166,9 @@ tr:last-child td {
 
   .transfer-arrow {
     text-align: center;
+  }
+
+  .evidence-list.scrollable {
+    max-height: 320px;
   }
 }

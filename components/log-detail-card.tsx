@@ -14,13 +14,15 @@ function describeCharacter(entry: InventoryEntry) {
 function EvidenceList<T>({
   rows,
   render,
+  scrollable = false,
 }: {
   rows: T[];
   render: (row: T, index: number) => string;
+  scrollable?: boolean;
 }) {
   if (rows.length === 0) return <div className="evidence-empty">No data recorded for this section.</div>;
   return (
-    <div className="evidence-list">
+    <div className={scrollable ? "evidence-list scrollable" : "evidence-list"}>
       {rows.map((row, index) => <div className="evidence-row" key={index}>{render(row, index)}</div>)}
     </div>
   );
@@ -123,13 +125,13 @@ export function PlayerEventDetailCard({ event }: { event: PlayerEventDetail }) {
       </div>
       <div className="evidence-grid">
         <Section title="Inventory">
-          <EvidenceList rows={event.inventory} render={(entry) => describeCharacter(entry)} />
+          <EvidenceList rows={event.inventory} render={(entry) => describeCharacter(entry)} scrollable />
         </Section>
         <Section title="Items">
-          <EvidenceList rows={event.items} render={(entry: ItemEntry) => `${entry.item_name ?? "Unknown Item"} x${formatNumber(entry.quantity ?? 0)}`} />
+          <EvidenceList rows={event.items} render={(entry: ItemEntry) => `${entry.item_name ?? "Unknown Item"} x${formatNumber(entry.quantity ?? 0)}`} scrollable />
         </Section>
         <Section title="Equipped">
-          <EvidenceList rows={event.equipped} render={(entry) => describeCharacter(entry)} />
+          <EvidenceList rows={event.equipped} render={(entry) => describeCharacter(entry)} scrollable />
         </Section>
       </div>
     </DetailShell>
@@ -158,13 +160,13 @@ export function SnapshotDetailCard({ snapshot }: { snapshot: SnapshotDetail }) {
       </div>
       <div className="evidence-grid">
         <Section title="Inventory">
-          <EvidenceList rows={snapshot.inventory} render={(entry) => describeCharacter(entry)} />
+          <EvidenceList rows={snapshot.inventory} render={(entry) => describeCharacter(entry)} scrollable />
         </Section>
         <Section title="Items">
-          <EvidenceList rows={snapshot.items} render={(entry: ItemEntry) => `${entry.item_name ?? "Unknown Item"} x${formatNumber(entry.quantity ?? 0)}`} />
+          <EvidenceList rows={snapshot.items} render={(entry: ItemEntry) => `${entry.item_name ?? "Unknown Item"} x${formatNumber(entry.quantity ?? 0)}`} scrollable />
         </Section>
         <Section title="Equipped">
-          <EvidenceList rows={snapshot.equipped} render={(entry) => describeCharacter(entry)} />
+          <EvidenceList rows={snapshot.equipped} render={(entry) => describeCharacter(entry)} scrollable />
         </Section>
       </div>
     </DetailShell>
