@@ -4,6 +4,7 @@ import { createServerSupabaseClient } from "@/lib/supabase";
 export const dynamic = "force-dynamic";
 
 const countTargets = [
+  ["players", "dashboard_player_latest"],
   ["events", "player_events"],
   ["snapshots", "player_snapshots"],
   ["purchases", "product_purchases"],
@@ -56,7 +57,6 @@ export async function GET() {
   );
 
   const counts = {
-    players: null,
     ...Object.fromEntries(results.map(([key, result]) => [key, result.count])),
   };
   const errors = Object.fromEntries(

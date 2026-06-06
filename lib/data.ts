@@ -331,6 +331,30 @@ export async function getLatestPlayers(options?: QueryOptions): Promise<PagedRes
   const supabase = createServerSupabaseClient();
   const { page, pageSize, search, type } = normalizeQueryOptions(options);
   const from = (page - 1) * pageSize;
+  let query = supabase
+    .from("dashboard_player_latest")
+    .select("snapshot_id, snapshot_kind, player_id, player_name, cash, highest_wave, total_kills, created_at")
+    .order("snapshot_id", { ascending: false })
+    .range(from, from + pageSize);
+
+  query = applyPlayerSearch(query, search);
+  if (type) query = query.eq("snapshot_kind", type);
+  const { data, error } = await query;
+  if (error) {
+    return getLatestPlayersFromSnapshots(options);
+  }
+
+  const loadedRows = (data ?? []).map((row) => ({
+    ...(row as Omit<SnapshotRow, "id"> & { snapshot_id: number }),
+    id: (row as { snapshot_id: number }).snapshot_id,
+  })) as SnapshotRow[];
+  return pagedApproximateResult(loadedRows, page, pageSize, from);
+}
+
+async function getLatestPlayersFromSnapshots(options?: QueryOptions): Promise<PagedResult<SnapshotRow>> {
+  const supabase = createServerSupabaseClient();
+  const { page, pageSize, search, type } = normalizeQueryOptions(options);
+  const from = (page - 1) * pageSize;
   const scanLimit = Math.min(1000, Math.max(pageSize + 1, page * pageSize * 30));
   let query = supabase
     .from("player_snapshots")
