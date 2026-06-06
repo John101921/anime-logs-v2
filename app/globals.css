@@ -353,6 +353,32 @@ tr:last-child td {
   letter-spacing: 2px;
 }
 
+.view-button {
+  display: inline-flex;
+  min-height: 30px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #cfe5f9;
+  border-radius: 4px;
+  background: #f3f9ff;
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 0 10px;
+}
+
+.view-button:hover {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: #fff;
+}
+
+.view-button.disabled {
+  border-color: var(--line);
+  background: #f6f8fa;
+  color: var(--muted);
+}
+
 .badge.danger {
   background: #fff1f0;
   color: var(--danger);
