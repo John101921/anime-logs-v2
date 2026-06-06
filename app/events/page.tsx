@@ -31,7 +31,7 @@ export default async function EventsPage({
           />
         </CardHeader>
         <PlayerEventsTable rows={result.rows} />
-        <Pagination pathname="/events" page={result.page} hasNextPage={result.hasNextPage} query={params.q} type={params.type} status={params.status} pageSize={pageSize} recordCount={result.rows.length} />
+        <Pagination pathname="/events" page={result.page} hasNextPage={result.hasNextPage} query={params.q} type={params.type} status={params.status} pageSize={pageSize} recordCount={result.rows.length} totalCount={result.totalCount} />
       </section>
     </DashboardShell>
   );

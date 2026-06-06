@@ -31,7 +31,7 @@ export default async function GiftsPage({
           />
         </CardHeader>
         <GiftsTable rows={result.rows} />
-        <Pagination pathname="/gifts" page={result.page} hasNextPage={result.hasNextPage} query={params.q} type={params.type} pageSize={pageSize} recordCount={result.rows.length} />
+        <Pagination pathname="/gifts" page={result.page} hasNextPage={result.hasNextPage} query={params.q} type={params.type} pageSize={pageSize} recordCount={result.rows.length} totalCount={result.totalCount} />
       </section>
     </DashboardShell>
   );

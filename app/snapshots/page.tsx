@@ -31,7 +31,7 @@ export default async function SnapshotsPage({
           />
         </CardHeader>
         <SnapshotTable rows={result.rows} />
-        <Pagination pathname="/snapshots" page={result.page} hasNextPage={result.hasNextPage} query={params.q} type={params.type} status={params.status} pageSize={pageSize} recordCount={result.rows.length} />
+        <Pagination pathname="/snapshots" page={result.page} hasNextPage={result.hasNextPage} query={params.q} type={params.type} status={params.status} pageSize={pageSize} recordCount={result.rows.length} totalCount={result.totalCount} />
       </section>
     </DashboardShell>
   );

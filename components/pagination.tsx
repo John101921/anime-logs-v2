@@ -20,6 +20,7 @@ export function Pagination({
   status,
   pageSize,
   recordCount,
+  totalCount,
 }: {
   pathname: string;
   page: number;
@@ -29,17 +30,19 @@ export function Pagination({
   status?: string;
   pageSize?: number;
   recordCount: number;
+  totalCount: number;
 }) {
   const preserved = { q: query, type, status, pageSize };
   const pages = Array.from(new Set([1, Math.max(1, page - 1), page, page + 1, page + 2])).filter((item) => item > 0);
   const safePageSize = pageSize ?? 10;
-  const startRecord = recordCount > 0 ? (page - 1) * safePageSize + 1 : 0;
-  const endRecord = recordCount > 0 ? startRecord + recordCount - 1 : 0;
+  const startRecord = totalCount > 0 ? (page - 1) * safePageSize + 1 : 0;
+  const endRecord = totalCount > 0 ? Math.min(startRecord + recordCount - 1, totalCount) : 0;
+  const formattedTotal = new Intl.NumberFormat("en-US").format(totalCount);
 
   return (
     <div className="pagination">
       <div className="page-size-summary">
-        <span>{recordCount > 0 ? `Showing ${startRecord}-${endRecord} records` : "Showing 0 records"}</span>
+        <span>{totalCount > 0 ? `Showing ${startRecord}-${endRecord} of ${formattedTotal} records` : "Showing 0 records"}</span>
         <span className="page-size-control">
           <AutoFilterSelect
             name="pageSize"

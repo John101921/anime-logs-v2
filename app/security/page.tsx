@@ -33,7 +33,7 @@ export default async function SecurityPage({
           />
         </CardHeader>
         <SecurityTable rows={result.rows} />
-        <Pagination pathname="/security" page={result.page} hasNextPage={result.hasNextPage} query={params.q} type={params.type} status={params.status} pageSize={pageSize} recordCount={result.rows.length} />
+        <Pagination pathname="/security" page={result.page} hasNextPage={result.hasNextPage} query={params.q} type={params.type} status={params.status} pageSize={pageSize} recordCount={result.rows.length} totalCount={result.totalCount} />
       </section>
     </DashboardShell>
   );

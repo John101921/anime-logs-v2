@@ -42,7 +42,7 @@ export default async function SalesPage({
           />
         </CardHeader>
         <CharacterSalesTable rows={result.rows} />
-        <Pagination pathname="/sales" page={result.page} hasNextPage={result.hasNextPage} query={params.q} type={params.type} status={params.status} pageSize={pageSize} recordCount={result.rows.length} />
+        <Pagination pathname="/sales" page={result.page} hasNextPage={result.hasNextPage} query={params.q} type={params.type} status={params.status} pageSize={pageSize} recordCount={result.rows.length} totalCount={result.totalCount} />
       </section>
     </DashboardShell>
   );

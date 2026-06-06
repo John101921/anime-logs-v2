@@ -30,7 +30,7 @@ export default async function PurchasesPage({
           />
         </CardHeader>
         <PurchasesTable rows={result.rows} />
-        <Pagination pathname="/purchases" page={result.page} hasNextPage={result.hasNextPage} query={params.q} status={params.status} pageSize={pageSize} recordCount={result.rows.length} />
+        <Pagination pathname="/purchases" page={result.page} hasNextPage={result.hasNextPage} query={params.q} status={params.status} pageSize={pageSize} recordCount={result.rows.length} totalCount={result.totalCount} />
       </section>
     </DashboardShell>
   );
