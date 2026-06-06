@@ -25,6 +25,7 @@ export default async function PurchasesPage({
             pageSize={pageSize}
             totalLabel="Total Purchases"
             totalCount={result.totalCount}
+            totalCountIsExact={result.totalCountIsExact}
             statusOptions={[
               { label: "Verified", value: "verified" },
               { label: "Missing purchase ID", value: "missing_purchase_id" },
@@ -32,7 +33,7 @@ export default async function PurchasesPage({
           />
         </CardHeader>
         <PurchasesTable rows={result.rows} />
-        <Pagination pathname="/purchases" page={result.page} hasNextPage={result.hasNextPage} query={params.q} status={params.status} pageSize={pageSize} recordCount={result.rows.length} totalCount={result.totalCount} />
+        <Pagination pathname="/purchases" page={result.page} hasNextPage={result.hasNextPage} query={params.q} status={params.status} pageSize={pageSize} recordCount={result.rows.length} totalCount={result.totalCount} totalCountIsExact={result.totalCountIsExact} />
       </section>
     </DashboardShell>
   );

@@ -21,6 +21,7 @@ export function Pagination({
   pageSize,
   recordCount,
   totalCount,
+  totalCountIsExact = true,
 }: {
   pathname: string;
   page: number;
@@ -31,13 +32,14 @@ export function Pagination({
   pageSize?: number;
   recordCount: number;
   totalCount: number;
+  totalCountIsExact?: boolean;
 }) {
   const preserved = { q: query, type, status, pageSize };
   const pages = Array.from(new Set([1, Math.max(1, page - 1), page, page + 1, page + 2])).filter((item) => item > 0);
   const safePageSize = pageSize ?? 10;
   const startRecord = totalCount > 0 ? (page - 1) * safePageSize + 1 : 0;
   const endRecord = totalCount > 0 ? Math.min(startRecord + recordCount - 1, totalCount) : 0;
-  const formattedTotal = new Intl.NumberFormat("en-US").format(totalCount);
+  const formattedTotal = `${new Intl.NumberFormat("en-US").format(totalCount)}${totalCountIsExact ? "" : "+"}`;
 
   return (
     <div className="pagination">

@@ -26,6 +26,7 @@ export default async function SecurityPage({
             pageSize={pageSize}
             totalLabel="Total Security Events"
             totalCount={result.totalCount}
+            totalCountIsExact={result.totalCountIsExact}
             typeOptions={[
               { label: "Critical", value: "critical" },
               { label: "High", value: "high" },
@@ -35,7 +36,7 @@ export default async function SecurityPage({
           />
         </CardHeader>
         <SecurityTable rows={result.rows} />
-        <Pagination pathname="/security" page={result.page} hasNextPage={result.hasNextPage} query={params.q} type={params.type} status={params.status} pageSize={pageSize} recordCount={result.rows.length} totalCount={result.totalCount} />
+        <Pagination pathname="/security" page={result.page} hasNextPage={result.hasNextPage} query={params.q} type={params.type} status={params.status} pageSize={pageSize} recordCount={result.rows.length} totalCount={result.totalCount} totalCountIsExact={result.totalCountIsExact} />
       </section>
     </DashboardShell>
   );

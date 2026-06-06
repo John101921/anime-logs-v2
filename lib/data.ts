@@ -144,6 +144,7 @@ export type PagedResult<T> = {
   page: number;
   pageSize: number;
   totalCount: number;
+  totalCountIsExact: boolean;
   hasNextPage: boolean;
 };
 
@@ -180,6 +181,10 @@ function normalizeSale(row: CharacterSaleRow): CharacterSaleRow {
     ...row,
     characters: asArray<SaleCharacter>(row.characters),
   };
+}
+
+function approximateTotalCount(from: number, rowsLength: number, hasNextPage: boolean) {
+  return from + rowsLength + (hasNextPage ? 1 : 0);
 }
 
 export async function getOverviewData() {
@@ -240,7 +245,7 @@ export async function getGifts(options?: QueryOptions): Promise<PagedResult<Gift
   if (error) throw error;
   const rows = (data ?? []) as GiftRow[];
   const totalCount = count ?? rows.length;
-  return { rows, page, pageSize, totalCount, hasNextPage: page * pageSize < totalCount };
+  return { rows, page, pageSize, totalCount, totalCountIsExact: true, hasNextPage: page * pageSize < totalCount };
 }
 
 export async function getCharacterSales(options?: QueryOptions): Promise<PagedResult<CharacterSaleRow>> {
@@ -270,7 +275,7 @@ export async function getCharacterSales(options?: QueryOptions): Promise<PagedRe
   if (error) throw error;
   const rows = ((data ?? []) as CharacterSaleRow[]).map(normalizeSale);
   const totalCount = count ?? rows.length;
-  return { rows, page, pageSize, totalCount, hasNextPage: page * pageSize < totalCount };
+  return { rows, page, pageSize, totalCount, totalCountIsExact: true, hasNextPage: page * pageSize < totalCount };
 }
 
 export async function getPlayerEvents(options?: QueryOptions): Promise<PagedResult<PlayerEventRow>> {
@@ -290,7 +295,7 @@ export async function getPlayerEvents(options?: QueryOptions): Promise<PagedResu
   if (error) throw error;
   const rows = (data ?? []) as PlayerEventRow[];
   const totalCount = count ?? rows.length;
-  return { rows, page, pageSize, totalCount, hasNextPage: page * pageSize < totalCount };
+  return { rows, page, pageSize, totalCount, totalCountIsExact: true, hasNextPage: page * pageSize < totalCount };
 }
 
 export async function getSnapshots(options?: QueryOptions): Promise<PagedResult<SnapshotRow>> {
@@ -300,17 +305,19 @@ export async function getSnapshots(options?: QueryOptions): Promise<PagedResult<
   const to = from + pageSize;
   let query = supabase
     .from("player_snapshots")
-    .select("id, snapshot_kind, player_id, player_name, cash, highest_wave, total_kills, created_at", { count: "exact" })
+    .select("id, snapshot_kind, player_id, player_name, cash, highest_wave, total_kills, created_at")
     .order("created_at", { ascending: false })
-    .range(from, to - 1);
+    .range(from, to);
 
   query = applyPlayerSearch(query, search);
   if (type) query = query.eq("snapshot_kind", type);
-  const { data, error, count } = await query;
+  const { data, error } = await query;
   if (error) throw error;
-  const rows = (data ?? []) as SnapshotRow[];
-  const totalCount = count ?? rows.length;
-  return { rows, page, pageSize, totalCount, hasNextPage: page * pageSize < totalCount };
+  const loadedRows = (data ?? []) as SnapshotRow[];
+  const rows = loadedRows.slice(0, pageSize);
+  const hasNextPage = loadedRows.length > pageSize;
+  const totalCount = approximateTotalCount(from, rows.length, hasNextPage);
+  return { rows, page, pageSize, totalCount, totalCountIsExact: false, hasNextPage };
 }
 
 export async function getLatestPlayers(options?: QueryOptions): Promise<PagedResult<SnapshotRow>> {
@@ -329,19 +336,11 @@ export async function getLatestPlayers(options?: QueryOptions): Promise<PagedRes
   const { data, error } = await query;
   if (error) throw error;
 
-  let countQuery = supabase
-    .from("latest_player_snapshots")
-    .select("id", { count: "exact", head: true });
-
-  countQuery = applyPlayerSearch(countQuery, search);
-  if (type) countQuery = countQuery.eq("snapshot_kind", type);
-
-  const { count } = await countQuery;
   const loadedRows = (data ?? []) as SnapshotRow[];
   const rows = loadedRows.slice(0, pageSize);
   const hasNextPage = loadedRows.length > pageSize;
-  const totalCount = count ?? from + rows.length + (hasNextPage ? 1 : 0);
-  return { rows, page, pageSize, totalCount, hasNextPage: page * pageSize < totalCount };
+  const totalCount = approximateTotalCount(from, rows.length, hasNextPage);
+  return { rows, page, pageSize, totalCount, totalCountIsExact: false, hasNextPage };
 }
 
 export async function getPurchases(options?: QueryOptions): Promise<PagedResult<PurchaseRow>> {
@@ -370,7 +369,7 @@ export async function getPurchases(options?: QueryOptions): Promise<PagedResult<
   if (error) throw error;
   const rows = (data ?? []) as PurchaseRow[];
   const totalCount = count ?? rows.length;
-  return { rows, page, pageSize, totalCount, hasNextPage: page * pageSize < totalCount };
+  return { rows, page, pageSize, totalCount, totalCountIsExact: true, hasNextPage: page * pageSize < totalCount };
 }
 
 export async function getSecurityEvents(options?: QueryOptions): Promise<PagedResult<SecurityRow>> {
@@ -398,7 +397,7 @@ export async function getSecurityEvents(options?: QueryOptions): Promise<PagedRe
   if (error) throw error;
   const rows = (data ?? []) as SecurityRow[];
   const totalCount = count ?? rows.length;
-  return { rows, page, pageSize, totalCount, hasNextPage: page * pageSize < totalCount };
+  return { rows, page, pageSize, totalCount, totalCountIsExact: true, hasNextPage: page * pageSize < totalCount };
 }
 
 export async function getPlayerInvestigation(playerId: number): Promise<PlayerInvestigation> {

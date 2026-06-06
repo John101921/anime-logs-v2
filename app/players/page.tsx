@@ -27,6 +27,7 @@ export default async function PlayersPage({
             pageSize={pageSize}
             totalLabel="Total Players"
             totalCount={result.totalCount}
+            totalCountIsExact={result.totalCountIsExact}
             typeOptions={[
               { label: "Full snapshot", value: "full" },
               { label: "Compact snapshot", value: "compact" },
@@ -34,7 +35,7 @@ export default async function PlayersPage({
           />
         </CardHeader>
         <SnapshotTable rows={result.rows} />
-        <Pagination pathname="/players" page={result.page} hasNextPage={result.hasNextPage} query={params.q} type={params.type} status={params.status} pageSize={pageSize} recordCount={result.rows.length} totalCount={result.totalCount} />
+        <Pagination pathname="/players" page={result.page} hasNextPage={result.hasNextPage} query={params.q} type={params.type} status={params.status} pageSize={pageSize} recordCount={result.rows.length} totalCount={result.totalCount} totalCountIsExact={result.totalCountIsExact} />
       </section>
     </DashboardShell>
   );

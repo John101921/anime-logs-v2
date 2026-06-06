@@ -26,6 +26,7 @@ export default async function EventsPage({
             pageSize={pageSize}
             totalLabel="Total Events"
             totalCount={result.totalCount}
+            totalCountIsExact={result.totalCountIsExact}
             typeOptions={[
               { label: "Join", value: "join" },
               { label: "Leave", value: "leave" },
@@ -33,7 +34,7 @@ export default async function EventsPage({
           />
         </CardHeader>
         <PlayerEventsTable rows={result.rows} />
-        <Pagination pathname="/events" page={result.page} hasNextPage={result.hasNextPage} query={params.q} type={params.type} status={params.status} pageSize={pageSize} recordCount={result.rows.length} totalCount={result.totalCount} />
+        <Pagination pathname="/events" page={result.page} hasNextPage={result.hasNextPage} query={params.q} type={params.type} status={params.status} pageSize={pageSize} recordCount={result.rows.length} totalCount={result.totalCount} totalCountIsExact={result.totalCountIsExact} />
       </section>
     </DashboardShell>
   );

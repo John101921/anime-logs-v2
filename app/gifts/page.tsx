@@ -26,6 +26,7 @@ export default async function GiftsPage({
             pageSize={pageSize}
             totalLabel="Total Gifts"
             totalCount={result.totalCount}
+            totalCountIsExact={result.totalCountIsExact}
             typeOptions={[
               { label: "Mutated character", value: "mutated" },
               { label: "Trait character", value: "traited" },
@@ -33,7 +34,7 @@ export default async function GiftsPage({
           />
         </CardHeader>
         <GiftsTable rows={result.rows} />
-        <Pagination pathname="/gifts" page={result.page} hasNextPage={result.hasNextPage} query={params.q} type={params.type} pageSize={pageSize} recordCount={result.rows.length} totalCount={result.totalCount} />
+        <Pagination pathname="/gifts" page={result.page} hasNextPage={result.hasNextPage} query={params.q} type={params.type} pageSize={pageSize} recordCount={result.rows.length} totalCount={result.totalCount} totalCountIsExact={result.totalCountIsExact} />
       </section>
     </DashboardShell>
   );

@@ -33,6 +33,7 @@ export default async function SalesPage({
             pageSize={pageSize}
             totalLabel="Total Sales"
             totalCount={result.totalCount}
+            totalCountIsExact={result.totalCountIsExact}
             typeOptions={[
               { label: "Single", value: "single" },
               { label: "Bulk", value: "bulk" },
@@ -44,7 +45,7 @@ export default async function SalesPage({
           />
         </CardHeader>
         <CharacterSalesTable rows={result.rows} />
-        <Pagination pathname="/sales" page={result.page} hasNextPage={result.hasNextPage} query={params.q} type={params.type} status={params.status} pageSize={pageSize} recordCount={result.rows.length} totalCount={result.totalCount} />
+        <Pagination pathname="/sales" page={result.page} hasNextPage={result.hasNextPage} query={params.q} type={params.type} status={params.status} pageSize={pageSize} recordCount={result.rows.length} totalCount={result.totalCount} totalCountIsExact={result.totalCountIsExact} />
       </section>
     </DashboardShell>
   );

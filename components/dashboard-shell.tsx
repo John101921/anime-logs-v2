@@ -127,6 +127,7 @@ export function SearchForm({
   pageSize,
   totalLabel,
   totalCount,
+  totalCountIsExact = true,
   typeOptions = [],
   statusOptions = [],
 }: {
@@ -138,6 +139,7 @@ export function SearchForm({
   pageSize?: number;
   totalLabel?: string;
   totalCount?: number;
+  totalCountIsExact?: boolean;
   typeOptions?: Array<{ label: string; value: string }>;
   statusOptions?: Array<{ label: string; value: string }>;
 }) {
@@ -156,7 +158,7 @@ export function SearchForm({
       {totalLabel ? (
         <div className="table-total">
           <span>{totalLabel}</span>
-          <strong>{new Intl.NumberFormat("en-US").format(totalCount ?? 0)}</strong>
+          <strong>{new Intl.NumberFormat("en-US").format(totalCount ?? 0)}{totalCountIsExact ? "" : "+"}</strong>
         </div>
       ) : null}
       {typeOptions.length > 0 ? (
