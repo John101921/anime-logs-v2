@@ -18,6 +18,7 @@ export default async function EventsPage({
       <section className="table-card">
         <CardHeader title="Player Events">
           <SearchForm
+            pathname="/events"
             placeholder="Player name or ID..."
             value={params.q}
             type={params.type}
@@ -30,7 +31,7 @@ export default async function EventsPage({
           />
         </CardHeader>
         <PlayerEventsTable rows={result.rows} />
-        <Pagination pathname="/events" page={result.page} hasNextPage={result.hasNextPage} query={params.q} type={params.type} status={params.status} pageSize={pageSize} />
+        <Pagination pathname="/events" page={result.page} hasNextPage={result.hasNextPage} query={params.q} type={params.type} status={params.status} pageSize={pageSize} recordCount={result.rows.length} />
       </section>
     </DashboardShell>
   );

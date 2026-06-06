@@ -19,6 +19,7 @@ export default async function PlayersPage({
       <section className="table-card">
         <CardHeader title="Latest Player State">
           <SearchForm
+            pathname="/players"
             placeholder="Player name or ID..."
             value={params.q}
             type={params.type}
@@ -31,7 +32,7 @@ export default async function PlayersPage({
           />
         </CardHeader>
         <SnapshotTable rows={result.rows} />
-        <Pagination pathname="/players" page={result.page} hasNextPage={result.hasNextPage} query={params.q} type={params.type} status={params.status} pageSize={pageSize} />
+        <Pagination pathname="/players" page={result.page} hasNextPage={result.hasNextPage} query={params.q} type={params.type} status={params.status} pageSize={pageSize} recordCount={result.rows.length} />
       </section>
     </DashboardShell>
   );

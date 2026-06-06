@@ -434,6 +434,38 @@ select {
   letter-spacing: -0.03em;
 }
 
+.table-toolbar {
+  display: grid;
+  gap: 12px;
+  width: 100%;
+}
+
+.filter-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.filter-tab {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  padding: 0 13px;
+}
+
+.filter-tab:hover,
+.filter-tab.active {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
 .filters {
   display: flex;
   flex-wrap: wrap;
@@ -459,6 +491,10 @@ select {
 
 .rows-input {
   min-width: 130px;
+}
+
+.compact-select {
+  min-width: 150px;
 }
 
 .button,
@@ -501,21 +537,28 @@ select {
 .page-size-summary {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  flex-wrap: wrap;
+  gap: 12px;
   color: var(--muted);
   font-size: 12px;
 }
 
-.page-size-summary strong {
+.page-size-control {
   display: inline-flex;
-  min-width: 38px;
-  min-height: 30px;
   align-items: center;
-  justify-content: center;
+  gap: 6px;
+}
+
+.page-size-select {
+  width: 54px;
+  min-height: 30px;
   border: 1px solid var(--line);
   border-radius: 6px;
   background: var(--surface);
   color: var(--text);
+  font-size: 12px;
+  font-weight: 800;
+  padding: 0 6px;
 }
 
 .page-controls {

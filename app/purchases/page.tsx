@@ -18,6 +18,7 @@ export default async function PurchasesPage({
       <section className="table-card">
         <CardHeader title="Product Purchases">
           <SearchForm
+            pathname="/purchases"
             placeholder="Player, product, purchase ID..."
             value={params.q}
             status={params.status}
@@ -29,7 +30,7 @@ export default async function PurchasesPage({
           />
         </CardHeader>
         <PurchasesTable rows={result.rows} />
-        <Pagination pathname="/purchases" page={result.page} hasNextPage={result.hasNextPage} query={params.q} status={params.status} pageSize={pageSize} />
+        <Pagination pathname="/purchases" page={result.page} hasNextPage={result.hasNextPage} query={params.q} status={params.status} pageSize={pageSize} recordCount={result.rows.length} />
       </section>
     </DashboardShell>
   );

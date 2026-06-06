@@ -19,6 +19,7 @@ export default async function GiftsPage({
       <section className="table-card">
         <CardHeader title="Gift Logs">
           <SearchForm
+            pathname="/gifts"
             placeholder="Giver, receiver, player ID, character ID..."
             value={params.q}
             type={params.type}
@@ -30,7 +31,7 @@ export default async function GiftsPage({
           />
         </CardHeader>
         <GiftsTable rows={result.rows} />
-        <Pagination pathname="/gifts" page={result.page} hasNextPage={result.hasNextPage} query={params.q} type={params.type} pageSize={pageSize} />
+        <Pagination pathname="/gifts" page={result.page} hasNextPage={result.hasNextPage} query={params.q} type={params.type} pageSize={pageSize} recordCount={result.rows.length} />
       </section>
     </DashboardShell>
   );

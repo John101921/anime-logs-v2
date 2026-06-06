@@ -18,6 +18,7 @@ export default async function SnapshotsPage({
       <section className="table-card">
         <CardHeader title="Player Snapshots">
           <SearchForm
+            pathname="/snapshots"
             placeholder="Player name or ID..."
             value={params.q}
             type={params.type}
@@ -30,7 +31,7 @@ export default async function SnapshotsPage({
           />
         </CardHeader>
         <SnapshotTable rows={result.rows} />
-        <Pagination pathname="/snapshots" page={result.page} hasNextPage={result.hasNextPage} query={params.q} type={params.type} status={params.status} pageSize={pageSize} />
+        <Pagination pathname="/snapshots" page={result.page} hasNextPage={result.hasNextPage} query={params.q} type={params.type} status={params.status} pageSize={pageSize} recordCount={result.rows.length} />
       </section>
     </DashboardShell>
   );

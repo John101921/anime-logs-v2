@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { AutoFilterSelect } from "@/components/auto-filter-select";
 
 const nav = [
   { href: "/", label: "Home", icon: Home },
@@ -118,6 +119,7 @@ export function CardHeader({
 }
 
 export function SearchForm({
+  pathname,
   placeholder,
   value,
   type,
@@ -126,6 +128,7 @@ export function SearchForm({
   typeOptions = [],
   statusOptions = [],
 }: {
+  pathname: string;
   placeholder: string;
   value?: string;
   type?: string;
@@ -134,37 +137,51 @@ export function SearchForm({
   typeOptions?: Array<{ label: string; value: string }>;
   statusOptions?: Array<{ label: string; value: string }>;
 }) {
+  function filterHref(nextType: string) {
+    const params = new URLSearchParams();
+    if (value) params.set("q", value);
+    if (nextType) params.set("type", nextType);
+    if (status) params.set("status", status);
+    if (pageSize) params.set("pageSize", String(pageSize));
+    const suffix = params.toString();
+    return suffix ? `${pathname}?${suffix}` : pathname;
+  }
+
   return (
-    <form className="filters">
-      <div style={{ position: "relative" }}>
-        <Search className="muted" size={16} style={{ left: 12, position: "absolute", top: 12 }} />
-        <input
-          className="input"
-          name="q"
-          placeholder={placeholder}
-          defaultValue={value}
-          style={{ paddingLeft: 38 }}
-        />
-      </div>
+    <div className="table-toolbar">
       {typeOptions.length > 0 ? (
-        <select className="input small-input" name="type" defaultValue={type ?? ""}>
-          <option value="">Type: All</option>
-          {typeOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-        </select>
+        <div className="filter-tabs">
+          <Link className={!type ? "filter-tab active" : "filter-tab"} href={filterHref("")}>All</Link>
+          {typeOptions.map((option) => (
+            <Link key={option.value} className={type === option.value ? "filter-tab active" : "filter-tab"} href={filterHref(option.value)}>
+              {option.label}
+            </Link>
+          ))}
+        </div>
       ) : null}
-      {statusOptions.length > 0 ? (
-        <select className="input small-input" name="status" defaultValue={status ?? ""}>
-          <option value="">Status: All</option>
-          {statusOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-        </select>
-      ) : null}
-      <select className="input rows-input" name="pageSize" defaultValue={String(pageSize ?? 10)}>
-        <option value="10">10 / page</option>
-        <option value="25">25 / page</option>
-        <option value="50">50 / page</option>
-        <option value="100">100 / page</option>
-      </select>
-      <button className="button" type="submit">Search</button>
-    </form>
+      <form className="filters">
+        <div style={{ position: "relative" }}>
+          <Search className="muted" size={16} style={{ left: 12, position: "absolute", top: 12 }} />
+          <input
+            className="input"
+            name="q"
+            placeholder={placeholder}
+            defaultValue={value}
+            style={{ paddingLeft: 38 }}
+          />
+        </div>
+        {type ? <input name="type" type="hidden" value={type} /> : null}
+        {status ? <input name="status" type="hidden" value={status} /> : null}
+        {pageSize ? <input name="pageSize" type="hidden" value={pageSize} /> : null}
+        {statusOptions.length > 0 ? (
+          <AutoFilterSelect
+            name="status"
+            value={status}
+            options={[{ label: "Status: All", value: "" }, ...statusOptions]}
+          />
+        ) : null}
+        <button className="button" type="submit">Search</button>
+      </form>
+    </div>
   );
 }

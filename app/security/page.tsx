@@ -18,6 +18,7 @@ export default async function SecurityPage({
       <section className="table-card">
         <CardHeader title="Security Events">
           <SearchForm
+            pathname="/security"
             placeholder="Player, category, severity..."
             value={params.q}
             type={params.type}
@@ -32,7 +33,7 @@ export default async function SecurityPage({
           />
         </CardHeader>
         <SecurityTable rows={result.rows} />
-        <Pagination pathname="/security" page={result.page} hasNextPage={result.hasNextPage} query={params.q} type={params.type} status={params.status} pageSize={pageSize} />
+        <Pagination pathname="/security" page={result.page} hasNextPage={result.hasNextPage} query={params.q} type={params.type} status={params.status} pageSize={pageSize} recordCount={result.rows.length} />
       </section>
     </DashboardShell>
   );
