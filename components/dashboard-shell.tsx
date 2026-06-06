@@ -7,6 +7,7 @@ import {
   Coins,
   Home,
   LogOut,
+  Menu,
   PackageSearch,
   Search,
   Settings,
@@ -39,6 +40,8 @@ export function DashboardShell({
 }) {
   return (
     <div className="app-shell">
+      <input className="sidebar-toggle" id="sidebar-toggle" type="checkbox" />
+      <label className="sidebar-backdrop" htmlFor="sidebar-toggle" aria-label="Close sidebar" />
       <div className="app-frame">
         <aside className="sidebar">
           <div className="brand">
@@ -74,7 +77,12 @@ export function DashboardShell({
 
         <main className="main">
           <header className="topbar">
-            <h1>{title}</h1>
+            <div className="topbar-title">
+              <label className="mobile-menu-button" htmlFor="sidebar-toggle" aria-label="Open sidebar">
+                <Menu size={18} />
+              </label>
+              <h1>{title}</h1>
+            </div>
             <div className="user-pill">
               <ThemeToggle />
               <span className="avatar">
