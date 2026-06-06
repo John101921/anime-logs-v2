@@ -195,6 +195,46 @@ select {
   padding: 0 12px;
 }
 
+.live-refresh {
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 0 12px;
+}
+
+.live-refresh:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.live-refresh small {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.spinning {
+  animation: spin 700ms linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .theme-toggle:hover {
   border-color: var(--primary);
   color: var(--primary);
@@ -1079,10 +1119,16 @@ tr:last-child td {
     display: none;
   }
 
-  .theme-toggle {
+  .theme-toggle,
+  .live-refresh {
     width: 38px;
     justify-content: center;
     padding: 0;
+  }
+
+  .live-refresh span,
+  .live-refresh small {
+    display: none;
   }
 
   .card-header {

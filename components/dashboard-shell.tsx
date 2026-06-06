@@ -19,6 +19,7 @@ import Link from "next/link";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { AutoFilterSelect } from "@/components/auto-filter-select";
 import { AsyncCount } from "@/components/async-count";
+import { LiveRefresh } from "@/components/live-refresh";
 
 type CountKey = "players" | "events" | "snapshots" | "purchases" | "gifts" | "sales" | "security";
 
@@ -88,6 +89,7 @@ export function DashboardShell({
               <h1>{title}</h1>
             </div>
             <div className="user-pill">
+              <LiveRefresh />
               <ThemeToggle />
               <span className="avatar">
                 <Bell size={18} />

@@ -9,6 +9,7 @@ type CountsResponse = {
 };
 
 const formatter = new Intl.NumberFormat("en-US");
+const COUNT_REFRESH_INTERVAL_MS = 30000;
 
 export function AsyncCount({
   countKey,
@@ -25,24 +26,32 @@ export function AsyncCount({
   useEffect(() => {
     if (!countKey) return;
     let cancelled = false;
+    const key = countKey;
 
-    fetch("/api/counts", { cache: "no-store" })
-      .then((response) => response.ok ? response.json() as Promise<CountsResponse> : null)
-      .then((payload) => {
-        const nextCount = payload?.counts?.[countKey];
-        if (!cancelled && typeof nextCount === "number") {
-          setCount(nextCount);
-        }
-      })
-      .catch(() => {
-        // Counts are non-critical; table rendering should never depend on them.
-      })
-      .finally(() => {
-        if (!cancelled) setLoaded(true);
-      });
+    function loadCount() {
+      if (document.hidden) return;
+      fetch("/api/counts", { cache: "no-store" })
+        .then((response) => response.ok ? response.json() as Promise<CountsResponse> : null)
+        .then((payload) => {
+          const nextCount = payload?.counts?.[key];
+          if (!cancelled && typeof nextCount === "number") {
+            setCount(nextCount);
+          }
+        })
+        .catch(() => {
+          // Counts are non-critical; table rendering should never depend on them.
+        })
+        .finally(() => {
+          if (!cancelled) setLoaded(true);
+        });
+    }
+
+    loadCount();
+    const intervalId = window.setInterval(loadCount, COUNT_REFRESH_INTERVAL_MS);
 
     return () => {
       cancelled = true;
+      window.clearInterval(intervalId);
     };
   }, [countKey]);
 
